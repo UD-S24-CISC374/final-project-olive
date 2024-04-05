@@ -1,3 +1,5 @@
+import Phaser from "phaser";
+
 abstract class GameCharacter {
   name: string;
   health: number;
