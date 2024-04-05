@@ -1,3 +1,4 @@
+/*
 import Phaser from "phaser";
 
 abstract class GameCharacter {
@@ -32,3 +33,4 @@ abstract class GameCharacter {
     console.log(`${this.name} has been removed from the game.`);
   }
 }
+*/
