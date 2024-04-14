@@ -13,6 +13,8 @@ export default class MainScene extends Phaser.Scene {
     private score = 0;
     private scoreText: Phaser.GameObjects.Text;
     private end: Phaser.Physics.Arcade.StaticGroup;
+    private finish: Phaser.Physics.Arcade.StaticGroup;
+    private yCoords = [275, 325, 360, 445, 525];
 
     constructor() {
         super({ key: "MainScene" });
@@ -26,25 +28,39 @@ export default class MainScene extends Phaser.Scene {
 
         //this.edge.create(0, 0, "finishLine");
         this.edge = this.physics.add.staticGroup();
-        const platform = this.edge.create(
-            900,
-            568,
+        let platform = this.edge.create(
+            525,
+            400,
             "platform"
         ) as Phaser.Physics.Arcade.Sprite;
-        platform.setScale(2).refreshBody();
-        this.grunts = this.physics.add.group();
-        this.physics.add.collider(this.grunts, this.edge);
+        platform.angle = 90;
+        platform.setInteractive();
 
         this.grunts = this.physics.add.group({
             key: "enemyGrunt",
             repeat: this.gruntAmount - 1,
-            setXY: { x: 1100, y: 200, stepX: 60 },
+            setXY: { x: 1100, y: 525, stepX: 60 },
         });
         this.grunts.children.iterate((child) => {
             const c = child as Phaser.Physics.Arcade.Sprite;
-            c.setVelocity(0, Phaser.Math.FloatBetween(0.1, 0.2));
+            const randomIndex = Phaser.Math.Between(0, this.yCoords.length - 1);
+            c.setY(this.yCoords[randomIndex]);
             return true;
         });
+        this.grunts.children.iterate((child) => {
+            const c = child as Phaser.Physics.Arcade.Sprite;
+            console.log("run: " + c.name);
+            c.setVelocityX(Phaser.Math.FloatBetween(-50, -10));
+            return true;
+        });
+
+        this.physics.add.collider(
+            this.grunts,
+            this.edge,
+            this.handleHitWall,
+            undefined,
+            this
+        );
 
         //new PhaserLogo(this, this.cameras.main.width / 2, 0);
         this.fpsText = new FpsText(this);
@@ -75,6 +91,10 @@ export default class MainScene extends Phaser.Scene {
             color: "black",
         });
     }
+
+    private enemyHitWall() {
+        console.log("hit wall enemy");
+    }
     private handleHitWall() {
         this.physics.pause();
         this.grunts?.remove;
@@ -98,10 +118,20 @@ export default class MainScene extends Phaser.Scene {
                 });
                 this.grunts?.children.iterate((child) => {
                     const c = child as Phaser.Physics.Arcade.Sprite;
-                    c.setVelocity(0, Phaser.Math.FloatBetween(0.1, 0.2));
+                    c.setVelocity(0, Phaser.Math.FloatBetween(-50, -10));
                     return true;
                 });
             }
         }
+
+        this.grunts?.children.iterate((child, idx) => {
+            const c = child as Phaser.Physics.Arcade.Sprite;
+
+            if (c.x <= 475) {
+                console.log(idx + ":x:" + c.x + "y: " + c.y);
+            }
+
+            return true;
+        });
     }
 }
