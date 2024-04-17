@@ -13,6 +13,10 @@ export default class PreloadScene extends Phaser.Scene {
         this.load.image("finishLine", "assets/img/finishLine.png");
         this.load.image("platform", "assets/img/platform.png");
         this.load.image("button", "assets/img/button.jpg");
+        this.load.image("rangerTexture", "assets/img/ranger-small.png");
+        this.load.image("soldierTexture", "assets/img/soldier-small.png");
+        this.load.image("zombieTexture", "assets/img/zombie-small.png");
+        this.load.image("arrowTexture", "assets/img/arrow-small.png");
     }
 
     create() {
