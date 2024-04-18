@@ -17,6 +17,7 @@ export default class PreloadScene extends Phaser.Scene {
         this.load.image("soldierTexture", "assets/img/soldier-small.png");
         this.load.image("zombieTexture", "assets/img/zombie-small.png");
         this.load.image("arrowTexture", "assets/img/arrow-small.png");
+        this.load.image("wizardTexture", "assets/img/wizard-small.png");
     }
 
     create() {
