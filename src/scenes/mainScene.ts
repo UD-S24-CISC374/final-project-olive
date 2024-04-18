@@ -5,6 +5,10 @@ import { Zombie } from "../objects/ZombieChar"; // Assuming you have a Zombie cl
 //import { Soldier } from "../objects/SoldierChar";
 import { Ranger } from "../objects/RangerChar";
 import { Projectile } from "../objects/Projectile";
+import { Soldier } from "../objects/SoldierChar";
+import { Wizard } from "../objects/WizardChar";
+import { CharacterManager } from "../objects/CharacterManager";
+import { GameCharacter } from "../objects/GameCharacter";
 
 export default class MainScene extends Phaser.Scene {
     private edge: Phaser.Physics.Arcade.StaticGroup;
@@ -20,9 +24,11 @@ export default class MainScene extends Phaser.Scene {
     private end: Phaser.Physics.Arcade.StaticGroup;
     private finish: Phaser.Physics.Arcade.StaticGroup;
     private yCoords = [320, 360, 400, 440, 485, 520, 560]; //coords in relation to the board tiles
+    public characterManager: CharacterManager; //is a list of all the characters
 
     constructor() {
         super({ key: "MainScene" });
+        this.characterManager = new CharacterManager();
     }
 
     create() {
@@ -31,16 +37,21 @@ export default class MainScene extends Phaser.Scene {
         //let ground = this.add.image(5, 300, "trainGrounds");
         //ground.flipX = true;
 
-        //character image test
-        //this.add.image(600, 400, "soldierTexture");
-        //let soldier = new Soldier(this, 600, 400);
-        //this.add.image(600, 450, "rangerTexture");
+        let soldier = new Soldier(this, 600, 400);
         let ranger = new Ranger(this, 600, 485);
+        let wizard = new Wizard(this, 700, 500);
+
+        this.characterManager.addCharacter(soldier);
+        this.characterManager.addCharacter(ranger);
+        this.characterManager.addCharacter(wizard);
 
         this.time.addEvent({
             delay: 2000, // Attack every 2000 ms (2 seconds)
             callback: () => {
-                ranger.attack();
+                this.characterManager.characters.forEach((character) => {
+                    const gameCharacter = character as GameCharacter;
+                    gameCharacter.attack();
+                });
             },
             loop: true,
         });
@@ -126,7 +137,8 @@ export default class MainScene extends Phaser.Scene {
                 projectile.destroy(); // Destroy the projectile on impact
 
                 if (zombie instanceof Zombie) {
-                    zombie.takeDamage(50); // Now safely calling takeDamage on zombie
+                    const proj = projectile as Projectile;
+                    zombie.takeDamage(proj.damage); // Now safely calling takeDamage on zombie
                 } else {
                     console.error("Colliding object is not a Zombie");
                 }
@@ -180,5 +192,6 @@ export default class MainScene extends Phaser.Scene {
             projectile.setVelocityX(300);
             return true;
         });
+        this.characterManager.update();
     }
 }

@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import MainScene from "../scenes/mainScene";
 
 export abstract class GameCharacter extends Phaser.Physics.Arcade.Sprite {
     name: string;
@@ -6,6 +7,7 @@ export abstract class GameCharacter extends Phaser.Physics.Arcade.Sprite {
     position: Phaser.Math.Vector2;
     alive: boolean;
     cost: number;
+    dmg: number;
 
     constructor(
         scene: Phaser.Scene,
@@ -14,7 +16,8 @@ export abstract class GameCharacter extends Phaser.Physics.Arcade.Sprite {
         x: number,
         y: number,
         texture: string,
-        cost: number
+        cost: number,
+        dmg: number
     ) {
         super(scene, x, y, texture); // Call the super constructor with necessary parameters
         this.scene.add.existing(this); // Add this sprite to the scene
@@ -25,6 +28,7 @@ export abstract class GameCharacter extends Phaser.Physics.Arcade.Sprite {
         this.cost = cost;
         scene.physics.add.existing(this);
         this.setOrigin(0.5, 0.5); // Set the origin of the sprite
+        this.dmg = dmg;
     }
 
     abstract attack(): void;
@@ -33,9 +37,8 @@ export abstract class GameCharacter extends Phaser.Physics.Arcade.Sprite {
     takeDamage(damage: number): void {
         this.health -= damage;
         if (this.health <= 0) {
-            this.health = 0;
             this.alive = false;
-            this.remove();
+            (this.scene as MainScene).characterManager.removeCharacter(this);
         }
         console.log(`${this.name} is taking damage.`);
     }
