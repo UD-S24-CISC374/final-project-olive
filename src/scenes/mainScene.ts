@@ -34,8 +34,8 @@ export default class MainScene extends Phaser.Scene {
     create() {
         this.add.image(700, 400, "grass");
         this.add.image(1100, 400, "grass");
-        //let ground = this.add.image(5, 300, "trainGrounds");
-        //ground.flipX = true;
+        let ground = this.add.image(5, 300, "trainGrounds");
+        ground.flipX = true;
 
         let soldier = new Soldier(this, 600, 400);
         let ranger = new Ranger(this, 600, 485);
@@ -112,17 +112,27 @@ export default class MainScene extends Phaser.Scene {
             })
             .setOrigin(1, 0);
         const button = this.add.image(200, 700, "button").setInteractive();
+
+        //
+        let commandLine = this.add
+            .text(700, 600, "> ", {
+                fontFamily: "Arial",
+                fontSize: "20px",
+                color: "black",
+            })
+            .setInteractive();
+        commandLine.setVisible(false);
+        commandLine.setScale(2);
         button.on("pointerup", () => {
-            this.add.text(
-                300,
-                400,
-                "when this button is pushed it will display the book of allies",
-                {
-                    fontSize: "20px",
-                    color: "black",
-                }
-            );
+            commandLine.setVisible(true);
+            this.physics.pause();
+            console.log("button happened");
         });
+
+        commandLine.on("pointerup", () => {
+            console.log("command line Clicked");
+        });
+
         this.score = 0;
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         let scoreText = this.add.text(15, 50, "Score: 0", {
@@ -144,6 +154,15 @@ export default class MainScene extends Phaser.Scene {
                 }
             }
         );
+
+        const inputBox = document.createElement("input");
+        inputBox.type = "text";
+        inputBox.style.width = "300px";
+        inputBox.style.height = "30px";
+        inputBox.style.position = "absolute";
+        inputBox.style.left = "300px";
+        inputBox.style.top = "500px";
+        document.body.appendChild(inputBox);
     }
 
     private enemyHitWall() {
