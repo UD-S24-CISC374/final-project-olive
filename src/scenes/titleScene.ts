@@ -16,7 +16,7 @@ export default class MainScene extends Phaser.Scene {
     }
 
     create() {
-        this.add.image(500, 500, "background");
+        this.add.image(200, 500, "background");
         let hover = this.add.image(100, 100, "sword");
         let playButton = this.add.image(0, 0, "play_button");
         playButton.setInteractive();

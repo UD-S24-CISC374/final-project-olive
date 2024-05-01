@@ -9,6 +9,8 @@ import { Soldier } from "../objects/SoldierChar";
 import { Wizard } from "../objects/WizardChar";
 import { CharacterManager } from "../objects/CharacterManager";
 import { GameCharacter } from "../objects/GameCharacter";
+//import { terminalManager } from "../objects/terminamManagement";
+import { terminalCommandInterface } from "../interfaces/terminalCommandInterface";
 
 export default class MainScene extends Phaser.Scene {
     private edge: Phaser.Physics.Arcade.StaticGroup;
@@ -25,7 +27,23 @@ export default class MainScene extends Phaser.Scene {
     private finish: Phaser.Physics.Arcade.StaticGroup;
     private yCoords = [320, 360, 400, 440, 485, 520, 560]; //coords in relation to the board tiles
     public characterManager: CharacterManager; //is a list of all the characters
-
+    private userInput: string = "";
+    private consoleDialogue?: Phaser.GameObjects.Text;
+    private eventEmitter = new Phaser.Events.EventEmitter();
+    private lsTut: boolean = false;
+    private cdTut: boolean = false;
+    private curDir?: string = "";
+    private cdBackTut: boolean = false;
+    private instructionDialogue?: Phaser.GameObjects.Text;
+    private cdLsTut: boolean = false;
+    private won: boolean = false;
+    private terminalCommand: terminalCommandInterface = {
+        text: "",
+        curDir: this.curDir!,
+        consoleDialogue: this.consoleDialogue,
+    };
+    private inputBox: HTMLInputElement;
+    private readonly prompt: string = "";
     constructor() {
         super({ key: "MainScene" });
         this.characterManager = new CharacterManager();
@@ -38,7 +56,7 @@ export default class MainScene extends Phaser.Scene {
         ground.flipX = true;
 
         let soldier = new Soldier(this, 600, 400);
-        let ranger = new Ranger(this, 600, 485);
+        let ranger = new Ranger(this, 600, 500);
         let wizard = new Wizard(this, 700, 500);
 
         this.characterManager.addCharacter(soldier);
@@ -92,7 +110,12 @@ export default class MainScene extends Phaser.Scene {
             zombie.body?.setSize(20, 55); //sets the hitbox size for the zombies
             return true;
         });
-
+        const sButton = this.add.image(500, 100, "button").setInteractive();
+        const rButton = this.add.image(800, 100, "button").setInteractive();
+        const wButton = this.add.image(1100, 100, "button").setInteractive();
+        sButton.setVisible(false);
+        rButton.setVisible(false);
+        wButton.setVisible(false);
         this.physics.add.collider(
             this.grunts,
             this.edge,
@@ -100,6 +123,20 @@ export default class MainScene extends Phaser.Scene {
             undefined,
             this
         );
+        // this.terminalManager = new TerminalManager(
+        //     this.eventEmitter,
+        // );
+
+        // // Listen for the userInput event
+        // this.eventEmitter.on("userInput", (userInput: string) => {
+
+        // });
+
+        this.consoleDialogue = this.add.text(100, 160, "", {
+            fontSize: "24px",
+            color: "green",
+            backgroundColor: "#000000",
+        });
 
         //new PhaserLogo(this, this.cameras.main.width / 2, 0);
         this.fpsText = new FpsText(this);
@@ -111,27 +148,7 @@ export default class MainScene extends Phaser.Scene {
                 fontSize: "24px",
             })
             .setOrigin(1, 0);
-        const button = this.add.image(200, 700, "button").setInteractive();
-
-        //
-        let commandLine = this.add
-            .text(700, 600, "> ", {
-                fontFamily: "Arial",
-                fontSize: "20px",
-                color: "black",
-            })
-            .setInteractive();
-        commandLine.setVisible(false);
-        commandLine.setScale(2);
-        button.on("pointerup", () => {
-            commandLine.setVisible(true);
-            this.physics.pause();
-            console.log("button happened");
-        });
-
-        commandLine.on("pointerup", () => {
-            console.log("command line Clicked");
-        });
+        //const button = this.add.image(200, 700, "button").setInteractive();
 
         this.score = 0;
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -155,15 +172,133 @@ export default class MainScene extends Phaser.Scene {
             }
         );
 
-        const inputBox = document.createElement("input");
-        inputBox.type = "text";
-        inputBox.style.width = "300px";
-        inputBox.style.height = "30px";
-        inputBox.style.position = "absolute";
-        inputBox.style.left = "300px";
-        inputBox.style.top = "500px";
-        document.body.appendChild(inputBox);
+        this.inputBox = document.createElement("input");
+        this.inputBox.type = "text";
+        this.inputBox.style.width = "300px";
+        this.inputBox.style.height = "30px";
+        this.inputBox.style.position = "absolute";
+        this.inputBox.style.left = "500px";
+        this.inputBox.style.top = "600px";
+        document.body.appendChild(this.inputBox);
+        // button.on("pointerup", () => {
+        //     this.physics.pause();
+        //     console.log("button happened");
+        // });
     }
+    private setupInputListener() {
+        this.inputBox.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+                //const command = this.inputBox.value.trim();
+                //this.handleConsoleText(command);
+                this.inputBox.value = "";
+            }
+        });
+    }
+    public handleEnter(event: KeyboardEvent) {
+        if (event.key === "Enter") {
+            const userInput = this.inputBox.value;
+            this.eventEmitter.emit("userInput", userInput);
+            // Clear input field after processing
+            this.inputBox.value = this.prompt;
+        }
+        if (event.key === " ") {
+            this.inputBox.value += " ";
+        }
+        if (event.key == "Backspace") {
+            //prevent the elimination of the prompt
+            if (this.inputBox.value === this.prompt) {
+                event.preventDefault();
+            }
+        }
+    }
+    // private handleConsoleText = (
+    //     text: string
+    // ): terminalCommandInterface => {
+    //     if (text === "cd .") {
+    //         this.consoleDialogue?.setText("");
+    //         this.curDir === "";
+    //     }
+    //     // tutorial
+    //     if (text === "ls" && this.curDir === "") {
+    //         this.consoleDialogue?.setText("HiddenTexts  Troops");
+    //     }
+    //     if (text === "cd HiddenTexts") {
+    //         this.consoleDialogue?.setText("");
+    //         this.curDir = "HiddenTexts";
+    //     }
+    //     if (text === "ls" && this.curDir === "HiddenTexts") {
+    //         this.consoleDialogue?.setText("README");
+    //     }
+    //     if (text === "nano" && this.curDir === "HiddenTexts") {
+    //         this.consoleDialogue?.setText("");
+    //     }
+    //     if (text === "cd .." && this.curDir === "HiddenTexts") {
+    //         this.consoleDialogue?.setText("");
+    //         this.curDir = "";
+    //     }
+    //     // main game
+    //     // getting to the solider and back
+    //     if (text === "ls" && this.curDir === "Troops") {
+    //         this.consoleDialogue?.setText("Physical  Magic");
+    //     }
+    //     if (text === "cd Physical" && this.curDir === "Troops") {
+    //         this.consoleDialogue?.setText("");
+    //         this.curDir = "Troops";
+    //     }
+    //     if (text === "ls" && this.curDir === "Troops") {
+    //         this.consoleDialogue?.setText("Soldier Ranger");
+    //     }
+    //     if (text === "mv Solider" && this.curDir === "Physical") {
+    //         //set button to be visible
+    //     }
+    //     if (text === "cd .." && this.curDir === "Physical") {
+    //         this.curDir = "Troops";
+    //     }
+    //     if (text === "cd .." && this.curDir == "Troops") {
+    //         this.curDir = "";
+    //     }
+    //     // getting to the ranger and back
+    //     if (text === "ls" && this.curDir === "Troops") {
+    //        this.consoleDialogue?.setText("Physical  Magic");
+    //     }
+    //     if (text === "cd Physical" && this.curDir === "Troops") {
+    //         this.consoleDialogue?.setText("");
+    //        this.curDir = "Troops";
+    //     }
+    //     if (text === "ls" && this.curDir === "Physical") {
+    //         this.consoleDialogue?.setText("Solider  Ranger");
+    //     }
+    //     if (text === "mv Ranger" && this.curDir === "Physical") {
+    //         //set button to be visible
+    //     }
+    //     //getting to the wizard and back
+    //     if (text === "ls" && this.curDir === "Troops") {
+    //         this.consoleDialogue?.setText("Physical  Magic");
+    //     }
+    //     if (text === "cd Magic" && this.curDir === "Troops") {
+    //         this.consoleDialogue?.setText("Wizard");
+    //         this.curDir = "Magic";
+    //     }
+    //     if (text === "ls" && this.curDir === "Magic") {
+    //         this.consoleDialogue?.setText("Wizard");
+    //     }
+    //     if (text === "mv Wizard" && this.curDir === "Magic") {
+    //         //set button to be visible
+    //     }
+    //     if (text === "cd .." && this.curDir === "Magic") {
+    //         this.curDir = "Troops";
+    //     }
+    //     if (text === "cd .." && this.curDir == "Troops") {
+    //         this.curDir = "";
+    //     }
+
+    // return{
+    //     this.consoleDialogue,
+    //     this.curDir,
+    //     text
+    // }
+
+    //};
 
     private enemyHitWall() {
         console.log("hit wall enemy");
