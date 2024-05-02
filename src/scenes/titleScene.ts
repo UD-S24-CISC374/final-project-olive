@@ -1,52 +1,57 @@
 import Phaser from "phaser";
-// import PhaserLogo from "../objects/phaserLogo";
-// import FpsText from "../objects/fpsText";
-// import { Zombie } from "../objects/ZombieChar"; // Assuming you have a Zombie class that extends GameCharacter
-// import { Soldier } from "../objects/SoldierChar";
-// import { Ranger } from "../objects/RangerChar";
-// import { Projectile } from "../objects/Projectile";
-// import { Soldier } from "../objects/SoldierChar";
-// import { Wizard } from "../objects/WizardChar";
-// import { CharacterManager } from "../objects/CharacterManager";
-// import { GameCharacter } from "../objects/GameCharacter";
 
-export default class MainScene extends Phaser.Scene {
+export default class TitleScene extends Phaser.Scene {
     constructor() {
         super({ key: "TitleScene" });
     }
 
+    preload() {
+        this.load.image("background", "assets/img/dnd_titlescreen1.png");
+        this.load.image("play_button", "assets/img/play_button.png");
+        this.load.image("tutorial_icon", "assets/img/tutorial_icon.png");
+    }
+
     create() {
-        this.add.image(200, 500, "background");
-        let hover = this.add.image(100, 100, "sword");
-        let playButton = this.add.image(0, 0, "play_button");
-        playButton.setInteractive();
+        const centerX = this.cameras.main.width / 2;
+        const centerY = this.cameras.main.height / 2;
+
+        const background = this.add.image(0, 0, "background").setOrigin(0, 0);
+        const scaleX = this.cameras.main.width / background.width;
+        const scaleY = this.cameras.main.height / background.height;
+        const maxScale = Math.max(scaleX, scaleY);
+        background.setScale(maxScale).setScrollFactor(0);
+
+        let playButton = this.add
+            .image(centerX, centerY, "play_button")
+            .setInteractive();
 
         playButton.on("pointerover", () => {
-            hover.setVisible(true);
-            hover.x = playButton.x - playButton.width;
-            hover.y = playButton.y;
+            playButton.setScale(1.1);
         });
+
         playButton.on("pointerout", () => {
-            hover.setVisible(false);
+            playButton.setScale(1);
         });
+
         playButton.on("pointerup", () => {
             this.scene.start("MainScene");
         });
-    }
 
-    update() {}
-    preload() {
-        this.load.image("phaser-logo", "assets/img/phaser-logo.png");
-        this.load.image("grass", "assets/img/grass.png");
-        this.load.image("trainGrounds", "assets/img/trainGrounds.png");
-        this.load.image("dude", "assets/img/dude.png");
-        this.load.image("finishLine", "assets/img/finishLine.png");
-        this.load.image("platform", "assets/img/platform.png");
-        this.load.image("button", "assets/img/button.jpg");
-        this.load.image("rangerTexture", "assets/img/ranger-small.png");
-        this.load.image("soldierTexture", "assets/img/soldier-small.png");
-        this.load.image("zombieTexture", "assets/img/zombie-small.png");
-        this.load.image("arrowTexture", "assets/img/arrow-small.png");
-        this.load.image("wizardTexture", "assets/img/wizard-small.png");
+        let tutorialButton = this.add
+            .image(800, centerY + 7, "tutorial_icon")
+            .setInteractive()
+            .setScale(0.2);
+
+        tutorialButton.on("pointerover", () => {
+            tutorialButton.setScale(0.25);
+        });
+
+        tutorialButton.on("pointerout", () => {
+            tutorialButton.setScale(0.2);
+        });
+
+        tutorialButton.on("pointerup", () => {
+            this.scene.start("MainScene");
+        });
     }
 }
