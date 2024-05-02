@@ -24,6 +24,8 @@ export default class MainScene extends Phaser.Scene {
     private maxWave = 5;
     private score = 0;
     private scoreText: Phaser.GameObjects.Text;
+    private health: number; // Health of the player or base
+    private healthBar: Phaser.GameObjects.Graphics;
     private end: Phaser.Physics.Arcade.StaticGroup;
     private finish: Phaser.Physics.Arcade.StaticGroup;
     private yCoords = [320, 360, 400, 440, 485, 520, 560]; //coords in relation to the board tiles
@@ -48,9 +50,15 @@ export default class MainScene extends Phaser.Scene {
     constructor() {
         super({ key: "MainScene" });
         this.characterManager = new CharacterManager();
+        this.health = 100; // Initialize health
     }
 
     create() {
+        //health bar stuff
+        this.health = 100; // Starting health
+        this.healthBar = this.add.graphics();
+        this.updateHealthBar();
+
         // create the board for the actual map
         const map_boardConfig = {
             rows: 7,
@@ -150,7 +158,14 @@ export default class MainScene extends Phaser.Scene {
         this.physics.add.collider(
             this.grunts,
             this.edge,
-            this.handleHitWall,
+            (zombie, platform) => {
+                if (
+                    zombie instanceof Zombie &&
+                    platform instanceof Phaser.Physics.Arcade.Sprite
+                ) {
+                    this.handleHitWall(zombie);
+                }
+            },
             undefined,
             this
         );
@@ -345,10 +360,23 @@ export default class MainScene extends Phaser.Scene {
     private enemyHitWall() {
         console.log("hit wall enemy");
     }
-    private handleHitWall() {
-        this.physics.pause();
-        this.grunts?.remove;
-        this.gameOver = false;
+    private handleHitWall(zombie: Zombie): void {
+        // Assume each collision with the platform causes a fixed amount of damage
+        this.health -= zombie.dmg;
+        this.updateHealthBar();
+
+        if (this.health <= 0) {
+            this.gameOver = true;
+            this.physics.pause();
+            console.log("Game Over");
+        }
+        zombie.destroy();
+    }
+
+    updateHealthBar() {
+        this.healthBar.clear();
+        this.healthBar.fillStyle(0x00ff00, 1);
+        this.healthBar.fillRect(200, 10, 200 * (this.health / 100), 20);
     }
 
     update() {
