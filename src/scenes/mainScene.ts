@@ -10,6 +10,7 @@ import { Wizard } from "../objects/WizardChar";
 import { CharacterManager } from "../objects/CharacterManager";
 import { GameCharacter } from "../objects/GameCharacter";
 import { terminalCommandInterface } from "../interfaces/terminalCommandInterface";
+import { Board } from "../objects/board";
 
 export default class MainScene extends Phaser.Scene {
     private edge: Phaser.Physics.Arcade.StaticGroup;
@@ -22,6 +23,8 @@ export default class MainScene extends Phaser.Scene {
     private maxWave = 5;
     private score = 0;
     private scoreText: Phaser.GameObjects.Text;
+    private health: number; // Health of the player or base
+    private healthBar: Phaser.GameObjects.Graphics;
     private end: Phaser.Physics.Arcade.StaticGroup;
     private finish: Phaser.Physics.Arcade.StaticGroup;
     private yCoords = [320, 360, 400, 440, 485, 520, 560]; //coords in relation to the board tiles
@@ -48,20 +51,53 @@ export default class MainScene extends Phaser.Scene {
     constructor(eventEmitter: Phaser.Events.EventEmitter) {
         super({ key: "MainScene" });
         this.characterManager = new CharacterManager();
+        this.health = 100; // Initialize health
         this.eventEmitter = eventEmitter;
         this.inputElement = document.createElement("input");
         this.inputElement.type = "text";
     }
 
     create() {
-        this.add.image(700, 400, "grass");
-        this.add.image(1100, 400, "grass");
-        let ground = this.add.image(5, 300, "trainGrounds");
-        ground.flipX = true;
+        //health bar stuff
+        this.health = 100; // Starting health
+        this.healthBar = this.add.graphics();
+        this.updateHealthBar();
 
-        let soldier = new Soldier(this, 600, 400);
-        let ranger = new Ranger(this, 600, 500);
-        let wizard = new Wizard(this, 700, 500);
+        // create the board for the actual map
+        const map_boardConfig = {
+            rows: 7,
+            cols: 7,
+            cellWidth: 83,
+            cellHeight: 83,
+            posX: 100, // Centered X position for the board
+            posY: 60, // Centered Y position for the board
+        };
+
+        // create the board for enemy spawn
+        const spawn_boardConfig = {
+            rows: 7,
+            cols: 6,
+            cellWidth: 83,
+            cellHeight: 83,
+            posX: 750, // Centered X position for the board
+            posY: 60, // Centered Y position for the board
+        };
+
+        //this.add.image(750, 350, "right-trees").setScale(0.6);
+        this.add.image(400, 350, "grass").setScale(2);
+        //let ground = this.add.image(5, 300, "trainGrounds");
+
+        //ground.flipX = true;
+
+        //board
+        const map_board = new Board(this, map_boardConfig);
+
+        //enemy spawn board
+        const spawn_board = new Board(this, spawn_boardConfig);
+
+        let soldier = new Soldier(this, 200, 100);
+        let ranger = new Ranger(this, 200, 500);
+        let wizard = new Wizard(this, 200, 600);
 
         this.characterManager.addCharacter(soldier);
         this.characterManager.addCharacter(ranger);
@@ -85,24 +121,27 @@ export default class MainScene extends Phaser.Scene {
         //this.edge.create(0, 0, "finishLine");
         this.edge = this.physics.add.staticGroup();
         let platform = this.edge.create(
-            525,
-            400,
+            100,
+            350,
             "platform"
         ) as Phaser.Physics.Arcade.Sprite;
         // After rotating the platform
         platform.angle = 90;
         // Manually set the size of the physics body
-        platform.body?.setSize(30, 400);
+        platform.body?.setSize(30, 570);
+
+        this.add.image(-15, 350, "left-trees");
+
         this.grunts = this.physics.add.group({
             classType: Zombie, // Ensure all members of the group are Zombie instances
             key: "zombieTexture",
             repeat: this.gruntAmount - 1,
-            setXY: { x: 1100, y: 525, stepX: 60 },
+            setXY: { x: 850, y: 525, stepX: 60 },
         });
         this.grunts.children.iterate((child) => {
             const zombie = child as Zombie;
-            const randomIndex = Phaser.Math.Between(0, this.yCoords.length - 1);
-            zombie.setY(this.yCoords[randomIndex]);
+            //const randomIndex = Phaser.Math.Between(0, this.yCoords.length - 1);
+            zombie.setY(spawn_board.getRandomCellPosition().y);
             zombie.setVelocityX(Phaser.Math.FloatBetween(-50, -10)); // zombie speed
             zombie.setPushable(false);
             return true;
@@ -123,10 +162,24 @@ export default class MainScene extends Phaser.Scene {
         this.physics.add.collider(
             this.grunts,
             this.edge,
-            this.handleHitWall,
+            (zombie, platform) => {
+                if (
+                    zombie instanceof Zombie &&
+                    platform instanceof Phaser.Physics.Arcade.Sprite
+                ) {
+                    this.handleHitWall(zombie);
+                }
+            },
             undefined,
             this
         );
+        //bunch of trees
+        //this.add.image(800, 180, "tree").setScale(0.3);
+        //this.add.image(800, 300, "tree").setScale(0.3);
+        //this.add.image(800, 520, "tree").setScale(0.3);
+        //right-trees
+        this.add.image(750, 350, "right-trees").setScale(0.6);
+
         const randomIndexY = Phaser.Math.Between(0, this.yCoords.length - 1);
         const randomIndexX = Phaser.Math.Between(0, this.xCoords.length - 1);
         sButton.on("pointerdown", () => {
@@ -197,14 +250,18 @@ export default class MainScene extends Phaser.Scene {
             this.grunts,
             this.projectiles,
             (zombie, projectile) => {
-                projectile.destroy(); // Destroy the projectile on impact
+                // Cast zombie and projectile to their expected types
+                let z = zombie as Phaser.Physics.Arcade.Sprite;
+                let p = projectile as Phaser.Physics.Arcade.Sprite;
 
-                if (zombie instanceof Zombie) {
-                    const proj = projectile as Projectile;
-                    zombie.takeDamage(proj.damage); // Now safely calling takeDamage on zombie
-                } else {
-                    console.error("Colliding object is not a Zombie");
+                if (map_board.isWithinBounds(z.x, z.y)) {
+                    // Ensure the collision affects only those zombies within the board
+                    if (z instanceof Zombie && p instanceof Projectile) {
+                        z.takeDamage(p.damage);
+                    }
                 }
+                // Destroy the projectile regardless of the zombie's position
+                p.destroy();
             }
         );
 
@@ -334,10 +391,23 @@ export default class MainScene extends Phaser.Scene {
     private enemyHitWall() {
         console.log("hit wall enemy");
     }
-    private handleHitWall() {
-        this.physics.pause();
-        this.grunts?.remove;
-        this.gameOver = false;
+    private handleHitWall(zombie: Zombie): void {
+        // Assume each collision with the platform causes a fixed amount of damage
+        this.health -= zombie.dmg;
+        this.updateHealthBar();
+
+        if (this.health <= 0) {
+            this.gameOver = true;
+            this.physics.pause();
+            console.log("Game Over");
+        }
+        zombie.destroy();
+    }
+
+    updateHealthBar() {
+        this.healthBar.clear();
+        this.healthBar.fillStyle(0x00ff00, 1);
+        this.healthBar.fillRect(200, 10, 200 * (this.health / 100), 20);
     }
 
     update() {
