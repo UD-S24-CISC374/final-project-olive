@@ -9,7 +9,6 @@ import { Soldier } from "../objects/SoldierChar";
 import { Wizard } from "../objects/WizardChar";
 import { CharacterManager } from "../objects/CharacterManager";
 import { GameCharacter } from "../objects/GameCharacter";
-//import { terminalManager } from "../objects/terminamManagement";
 import { terminalCommandInterface } from "../interfaces/terminalCommandInterface";
 
 export default class MainScene extends Phaser.Scene {
@@ -29,12 +28,11 @@ export default class MainScene extends Phaser.Scene {
     public characterManager: CharacterManager; //is a list of all the characters
     private userInput: string = "";
     private consoleDialogue?: Phaser.GameObjects.Text;
-    private eventEmitter = new Phaser.Events.EventEmitter();
+    private eventEmitter: Phaser.Events.EventEmitter;
     private lsTut: boolean = false;
     private cdTut: boolean = false;
     private curDir?: string = "";
     private cdBackTut: boolean = false;
-    private instructionDialogue?: Phaser.GameObjects.Text;
     private cdLsTut: boolean = false;
     private won: boolean = false;
     private terminalCommand: terminalCommandInterface = {
@@ -43,10 +41,16 @@ export default class MainScene extends Phaser.Scene {
         consoleDialogue: this.consoleDialogue,
     };
     private inputBox: HTMLInputElement;
-    private readonly prompt: string = "";
-    constructor() {
+    private readonly prompt: string = "> ";
+    private inputElement: HTMLInputElement;
+    private xCoords = [600, 700, 800];
+
+    constructor(eventEmitter: Phaser.Events.EventEmitter) {
         super({ key: "MainScene" });
         this.characterManager = new CharacterManager();
+        this.eventEmitter = eventEmitter;
+        this.inputElement = document.createElement("input");
+        this.inputElement.type = "text";
     }
 
     create() {
@@ -113,9 +117,9 @@ export default class MainScene extends Phaser.Scene {
         const sButton = this.add.image(500, 100, "button").setInteractive();
         const rButton = this.add.image(800, 100, "button").setInteractive();
         const wButton = this.add.image(1100, 100, "button").setInteractive();
-        sButton.setVisible(false);
-        rButton.setVisible(false);
-        wButton.setVisible(false);
+        // sButton.setVisible(false);
+        // rButton.setVisible(false);
+        // wButton.setVisible(false);
         this.physics.add.collider(
             this.grunts,
             this.edge,
@@ -123,13 +127,45 @@ export default class MainScene extends Phaser.Scene {
             undefined,
             this
         );
+        const randomIndexY = Phaser.Math.Between(0, this.yCoords.length - 1);
+        const randomIndexX = Phaser.Math.Between(0, this.xCoords.length - 1);
+        sButton.on("pointerdown", () => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            let soldier1 = new Soldier(
+                this,
+                this.xCoords[randomIndexX],
+                this.yCoords[randomIndexY]
+            );
+            this.characterManager.addCharacter(soldier1);
+            console.log("button pressed");
+        });
+        rButton.on("pointerdown", () => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            let ranger1 = new Ranger(
+                this,
+                this.xCoords[randomIndexX],
+                this.yCoords[randomIndexY]
+            );
+            this.characterManager.addCharacter(ranger1);
+            console.log("button pressed");
+        });
+        wButton.on("pointerdown", () => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            let wizard1 = new Wizard(
+                this,
+                this.xCoords[randomIndexX],
+                this.yCoords[randomIndexY]
+            );
+            this.characterManager.addCharacter(wizard1);
+            console.log("button pressed");
+        });
         // this.terminalManager = new TerminalManager(
         //     this.eventEmitter,
         // );
 
-        // // Listen for the userInput event
+        // Listen for the userInput event
         // this.eventEmitter.on("userInput", (userInput: string) => {
-
+        //     this.handleConsoleText(userInput);
         // });
 
         this.consoleDialogue = this.add.text(100, 160, "", {
@@ -172,41 +208,36 @@ export default class MainScene extends Phaser.Scene {
             }
         );
 
-        this.inputBox = document.createElement("input");
-        this.inputBox.type = "text";
-        this.inputBox.style.width = "300px";
-        this.inputBox.style.height = "30px";
-        this.inputBox.style.position = "absolute";
-        this.inputBox.style.left = "500px";
-        this.inputBox.style.top = "600px";
-        document.body.appendChild(this.inputBox);
-        // button.on("pointerup", () => {
-        //     this.physics.pause();
-        //     console.log("button happened");
-        // });
-    }
-    private setupInputListener() {
-        this.inputBox.addEventListener("keydown", (event) => {
-            if (event.key === "Enter") {
-                //const command = this.inputBox.value.trim();
-                //this.handleConsoleText(command);
-                this.inputBox.value = "";
-            }
-        });
+        this.inputElement.style.position = "fixed";
+        this.inputElement.style.bottom = "10px";
+        this.inputElement.style.left = "25%";
+        this.inputElement.style.width = "40%";
+        this.inputElement.style.height = "40px";
+        this.inputElement.style.border = "1px solid #ccc";
+        this.inputElement.style.backgroundColor = "#2D2E2C";
+        this.inputElement.style.color = "white";
+        document.body.appendChild(this.inputElement);
+
+        this.inputElement.value = this.prompt;
+        this.inputElement.focus();
+        this.inputElement.addEventListener(
+            "keydown",
+            this.handleEnter.bind(this)
+        );
     }
     public handleEnter(event: KeyboardEvent) {
         if (event.key === "Enter") {
-            const userInput = this.inputBox.value;
+            const userInput = this.inputElement.value;
             this.eventEmitter.emit("userInput", userInput);
             // Clear input field after processing
-            this.inputBox.value = this.prompt;
+            this.inputElement.value = this.prompt;
         }
         if (event.key === " ") {
-            this.inputBox.value += " ";
+            this.inputElement.value += " ";
         }
         if (event.key == "Backspace") {
             //prevent the elimination of the prompt
-            if (this.inputBox.value === this.prompt) {
+            if (this.inputElement.value === this.prompt) {
                 event.preventDefault();
             }
         }
@@ -293,8 +324,8 @@ export default class MainScene extends Phaser.Scene {
     //     }
 
     // return{
-    //     this.consoleDialogue,
-    //     this.curDir,
+    //     consoleDialogue,
+    //     curDir?:this.curDir,
     //     text
     // }
 
