@@ -24,6 +24,7 @@ export default class MainScene extends Phaser.Scene {
     private maxWave = 5;
     private score = 0;
     private scoreText: Phaser.GameObjects.Text;
+    private currency: number; // Player currency
     private health: number; // Health of the player or base
     private healthBar: Phaser.GameObjects.Graphics;
     private end: Phaser.Physics.Arcade.StaticGroup;
@@ -47,15 +48,29 @@ export default class MainScene extends Phaser.Scene {
     };
     private inputBox: HTMLInputElement;
     private readonly prompt: string = "";
+    currencyText: Phaser.GameObjects.Text;
     constructor() {
         super({ key: "MainScene" });
         this.characterManager = new CharacterManager();
         this.health = 100; // Initialize health
+        this.currency = 50; // Starting currency
     }
 
     create() {
         //map image
         this.add.image(400, 350, "map").setScale(1);
+
+        //currency
+        // Add currency text
+        this.currencyText = this.add.text(
+            500,
+            5,
+            `Currency: ${this.currency}`,
+            {
+                fontSize: "30px",
+                color: "white",
+            }
+        );
 
         //health bar stuff
         this.health = 100; // Starting health
@@ -366,6 +381,11 @@ export default class MainScene extends Phaser.Scene {
         this.healthBar.clear();
         this.healthBar.fillStyle(0x00ff00, 1);
         this.healthBar.fillRect(200, 10, 200 * (this.health / 100), 20);
+    }
+
+    increaseCurrency(amount: number) {
+        this.currency += amount;
+        this.currencyText.setText(`Currency: ${this.currency}`);
     }
 
     update() {

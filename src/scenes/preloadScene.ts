@@ -26,6 +26,8 @@ export default class PreloadScene extends Phaser.Scene {
         this.load.image("left-trees", "assets/img/left-trees.jpg");
         this.load.image("right-trees", "assets/img/right-trees.jpg");
         this.load.image("map", "assets/img/map1.png");
+        this.load.image("energyBallTexture", "assets/img/energy-ball-sm.png");
+        this.load.image("fireBallTexture", "assets/img/fire-ball-sm.png");
     }
 
     create() {
