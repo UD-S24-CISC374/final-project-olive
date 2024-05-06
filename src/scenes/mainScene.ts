@@ -54,6 +54,9 @@ export default class MainScene extends Phaser.Scene {
     }
 
     create() {
+        //map image
+        this.add.image(400, 350, "map").setScale(1);
+
         //health bar stuff
         this.health = 100; // Starting health
         this.healthBar = this.add.graphics();
@@ -61,29 +64,23 @@ export default class MainScene extends Phaser.Scene {
 
         // create the board for the actual map
         const map_boardConfig = {
-            rows: 7,
+            rows: 5,
             cols: 7,
-            cellWidth: 83,
-            cellHeight: 83,
-            posX: 100, // Centered X position for the board
-            posY: 60, // Centered Y position for the board
+            cellWidth: 85,
+            cellHeight: 100,
+            posX: 280, // Centered X position for the board
+            posY: 150, // Centered Y position for the board
         };
 
         // create the board for enemy spawn
         const spawn_boardConfig = {
-            rows: 7,
-            cols: 6,
-            cellWidth: 83,
-            cellHeight: 83,
-            posX: 750, // Centered X position for the board
-            posY: 60, // Centered Y position for the board
+            rows: 5,
+            cols: 5,
+            cellWidth: 85,
+            cellHeight: 100,
+            posX: 870, // Centered X position for the board
+            posY: 150, // Centered Y position for the board
         };
-
-        //this.add.image(750, 350, "right-trees").setScale(0.6);
-        this.add.image(400, 350, "grass").setScale(2);
-        //let ground = this.add.image(5, 300, "trainGrounds");
-
-        //ground.flipX = true;
 
         //board
         const map_board = new Board(this, map_boardConfig);
@@ -91,9 +88,9 @@ export default class MainScene extends Phaser.Scene {
         //enemy spawn board
         const spawn_board = new Board(this, spawn_boardConfig);
 
-        let soldier = new Soldier(this, 200, 100);
-        let ranger = new Ranger(this, 200, 500);
-        let wizard = new Wizard(this, 200, 600);
+        let soldier = new Soldier(this, 330, 200);
+        let ranger = new Ranger(this, 330, 500);
+        let wizard = new Wizard(this, 330, 600);
 
         this.characterManager.addCharacter(soldier);
         this.characterManager.addCharacter(ranger);
@@ -117,16 +114,14 @@ export default class MainScene extends Phaser.Scene {
         //this.edge.create(0, 0, "finishLine");
         this.edge = this.physics.add.staticGroup();
         let platform = this.edge.create(
-            100,
-            350,
+            270,
+            400,
             "platform"
         ) as Phaser.Physics.Arcade.Sprite;
         // After rotating the platform
         platform.angle = 90;
         // Manually set the size of the physics body
-        platform.body?.setSize(30, 570);
-
-        this.add.image(-15, 350, "left-trees");
+        platform.body?.setSize(30, 500);
 
         this.grunts = this.physics.add.group({
             classType: Zombie, // Ensure all members of the group are Zombie instances
@@ -169,12 +164,6 @@ export default class MainScene extends Phaser.Scene {
             undefined,
             this
         );
-        //bunch of trees
-        //this.add.image(800, 180, "tree").setScale(0.3);
-        //this.add.image(800, 300, "tree").setScale(0.3);
-        //this.add.image(800, 520, "tree").setScale(0.3);
-        //right-trees
-        this.add.image(750, 350, "right-trees").setScale(0.6);
 
         // this.terminalManager = new TerminalManager(
         //     this.eventEmitter,
