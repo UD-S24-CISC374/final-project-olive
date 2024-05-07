@@ -24,7 +24,7 @@ export default class MainScene extends Phaser.Scene {
     private score = 0;
     private scoreText: Phaser.GameObjects.Text;
     private currency: number; // Player currency
-    private health: number; // Health of the player or base
+    private health: number; // Health of the base
     private healthBar: Phaser.GameObjects.Graphics;
     private end: Phaser.Physics.Arcade.StaticGroup;
     private finish: Phaser.Physics.Arcade.StaticGroup;
