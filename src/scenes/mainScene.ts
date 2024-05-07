@@ -2,22 +2,21 @@ import Phaser from "phaser";
 //import PhaserLogo from "../objects/phaserLogo";
 import FpsText from "../objects/fpsText";
 import { Zombie } from "../objects/ZombieChar"; // Assuming you have a Zombie class that extends GameCharacter
-//import { Soldier } from "../objects/SoldierChar";
 import { Ranger } from "../objects/RangerChar";
 import { Projectile } from "../objects/Projectile";
 import { Soldier } from "../objects/SoldierChar";
 import { Wizard } from "../objects/WizardChar";
 import { CharacterManager } from "../objects/CharacterManager";
 import { GameCharacter } from "../objects/GameCharacter";
-//import { terminalManager } from "../objects/terminamManagement";
-import { terminalCommandInterface } from "../interfaces/terminalCommandInterface";
 import { Board } from "../objects/board";
+import { CommandLine } from "../objects/commandLine";
 
 export default class MainScene extends Phaser.Scene {
     private edge: Phaser.Physics.Arcade.StaticGroup;
     private grunts?: Phaser.Physics.Arcade.Group;
     public projectiles?: Phaser.Physics.Arcade.Group;
     fpsText: FpsText;
+    public board_map: Board;
     private gameOver = false;
     private gruntAmount = 10;
     private currentWave = 0;
@@ -34,21 +33,14 @@ export default class MainScene extends Phaser.Scene {
     private userInput: string = "";
     private consoleDialogue?: Phaser.GameObjects.Text;
     private eventEmitter = new Phaser.Events.EventEmitter();
-    private lsTut: boolean = false;
-    private cdTut: boolean = false;
-    private curDir?: string = "";
-    private cdBackTut: boolean = false;
     private instructionDialogue?: Phaser.GameObjects.Text;
     private cdLsTut: boolean = false;
     private won: boolean = false;
-    private terminalCommand: terminalCommandInterface = {
-        text: "",
-        curDir: this.curDir!,
-        consoleDialogue: this.consoleDialogue,
-    };
     private inputBox: HTMLInputElement;
+    private outputBox?: Phaser.GameObjects.Text;
     private readonly prompt: string = "";
     currencyText: Phaser.GameObjects.Text;
+    private commandLine?: CommandLine;
     constructor() {
         super({ key: "MainScene" });
         this.characterManager = new CharacterManager();
@@ -57,6 +49,15 @@ export default class MainScene extends Phaser.Scene {
     }
 
     create() {
+        const map_boardConfig = {
+            rows: 5,
+            cols: 7,
+            cellWidth: 85,
+            cellHeight: 100,
+            posX: 280, // Centered X position for the board
+            posY: 150, // Centered Y position for the board
+        };
+        const map_board = new Board(this, map_boardConfig);
         //map image
         this.add.image(400, 350, "map").setScale(1);
 
@@ -77,15 +78,11 @@ export default class MainScene extends Phaser.Scene {
         this.healthBar = this.add.graphics();
         this.updateHealthBar();
 
-        // create the board for the actual map
-        const map_boardConfig = {
-            rows: 5,
-            cols: 7,
-            cellWidth: 85,
-            cellHeight: 100,
-            posX: 280, // Centered X position for the board
-            posY: 150, // Centered Y position for the board
-        };
+        this.commandLine = new CommandLine(
+            this,
+            this.characterManager,
+            this.currency
+        );
 
         // create the board for enemy spawn
         const spawn_boardConfig = {
@@ -97,13 +94,11 @@ export default class MainScene extends Phaser.Scene {
             posY: 150, // Centered Y position for the board
         };
 
-        //board
-        const map_board = new Board(this, map_boardConfig);
-
         //enemy spawn board
         const spawn_board = new Board(this, spawn_boardConfig);
 
-        let soldier = new Soldier(this, 330, 200);
+        const soldierPosition = map_board.getCellPosition(1, 4);
+        let soldier = new Soldier(this, soldierPosition.x, soldierPosition.y);
         let ranger = new Ranger(this, 330, 500);
         let wizard = new Wizard(this, 330, 600);
 
@@ -180,23 +175,18 @@ export default class MainScene extends Phaser.Scene {
             this
         );
 
-        // this.terminalManager = new TerminalManager(
-        //     this.eventEmitter,
-        // );
-
-        // // Listen for the userInput event
-        // this.eventEmitter.on("userInput", (userInput: string) => {
-
-        // });
-
+        // Command Line Console
         this.consoleDialogue = this.add.text(100, 160, "", {
             fontSize: "24px",
             color: "green",
             backgroundColor: "#000000",
         });
 
-        //new PhaserLogo(this, this.cameras.main.width / 2, 0);
         this.fpsText = new FpsText(this);
+
+        this.outputBox = this.createOutputBox(100, 200, 600, 200);
+
+        this.inputBox = this.createInputBox(100, 450, 600);
 
         const message = `Phaser v${Phaser.VERSION}`;
         this.add
@@ -205,7 +195,6 @@ export default class MainScene extends Phaser.Scene {
                 fontSize: "24px",
             })
             .setOrigin(1, 0);
-        //const button = this.add.image(200, 700, "button").setInteractive();
 
         this.score = 0;
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -232,134 +221,7 @@ export default class MainScene extends Phaser.Scene {
                 p.destroy();
             }
         );
-
-        this.inputBox = document.createElement("input");
-        this.inputBox.type = "text";
-        this.inputBox.style.width = "300px";
-        this.inputBox.style.height = "30px";
-        this.inputBox.style.position = "absolute";
-        this.inputBox.style.left = "500px";
-        this.inputBox.style.top = "600px";
-        document.body.appendChild(this.inputBox);
-        // button.on("pointerup", () => {
-        //     this.physics.pause();
-        //     console.log("button happened");
-        // });
     }
-    private setupInputListener() {
-        this.inputBox.addEventListener("keydown", (event) => {
-            if (event.key === "Enter") {
-                //const command = this.inputBox.value.trim();
-                //this.handleConsoleText(command);
-                this.inputBox.value = "";
-            }
-        });
-    }
-    public handleEnter(event: KeyboardEvent) {
-        if (event.key === "Enter") {
-            const userInput = this.inputBox.value;
-            this.eventEmitter.emit("userInput", userInput);
-            // Clear input field after processing
-            this.inputBox.value = this.prompt;
-        }
-        if (event.key === " ") {
-            this.inputBox.value += " ";
-        }
-        if (event.key == "Backspace") {
-            //prevent the elimination of the prompt
-            if (this.inputBox.value === this.prompt) {
-                event.preventDefault();
-            }
-        }
-    }
-    // private handleConsoleText = (
-    //     text: string
-    // ): terminalCommandInterface => {
-    //     if (text === "cd .") {
-    //         this.consoleDialogue?.setText("");
-    //         this.curDir === "";
-    //     }
-    //     // tutorial
-    //     if (text === "ls" && this.curDir === "") {
-    //         this.consoleDialogue?.setText("HiddenTexts  Troops");
-    //     }
-    //     if (text === "cd HiddenTexts") {
-    //         this.consoleDialogue?.setText("");
-    //         this.curDir = "HiddenTexts";
-    //     }
-    //     if (text === "ls" && this.curDir === "HiddenTexts") {
-    //         this.consoleDialogue?.setText("README");
-    //     }
-    //     if (text === "nano" && this.curDir === "HiddenTexts") {
-    //         this.consoleDialogue?.setText("");
-    //     }
-    //     if (text === "cd .." && this.curDir === "HiddenTexts") {
-    //         this.consoleDialogue?.setText("");
-    //         this.curDir = "";
-    //     }
-    //     // main game
-    //     // getting to the solider and back
-    //     if (text === "ls" && this.curDir === "Troops") {
-    //         this.consoleDialogue?.setText("Physical  Magic");
-    //     }
-    //     if (text === "cd Physical" && this.curDir === "Troops") {
-    //         this.consoleDialogue?.setText("");
-    //         this.curDir = "Troops";
-    //     }
-    //     if (text === "ls" && this.curDir === "Troops") {
-    //         this.consoleDialogue?.setText("Soldier Ranger");
-    //     }
-    //     if (text === "mv Solider" && this.curDir === "Physical") {
-    //         //set button to be visible
-    //     }
-    //     if (text === "cd .." && this.curDir === "Physical") {
-    //         this.curDir = "Troops";
-    //     }
-    //     if (text === "cd .." && this.curDir == "Troops") {
-    //         this.curDir = "";
-    //     }
-    //     // getting to the ranger and back
-    //     if (text === "ls" && this.curDir === "Troops") {
-    //        this.consoleDialogue?.setText("Physical  Magic");
-    //     }
-    //     if (text === "cd Physical" && this.curDir === "Troops") {
-    //         this.consoleDialogue?.setText("");
-    //        this.curDir = "Troops";
-    //     }
-    //     if (text === "ls" && this.curDir === "Physical") {
-    //         this.consoleDialogue?.setText("Solider  Ranger");
-    //     }
-    //     if (text === "mv Ranger" && this.curDir === "Physical") {
-    //         //set button to be visible
-    //     }
-    //     //getting to the wizard and back
-    //     if (text === "ls" && this.curDir === "Troops") {
-    //         this.consoleDialogue?.setText("Physical  Magic");
-    //     }
-    //     if (text === "cd Magic" && this.curDir === "Troops") {
-    //         this.consoleDialogue?.setText("Wizard");
-    //         this.curDir = "Magic";
-    //     }
-    //     if (text === "ls" && this.curDir === "Magic") {
-    //         this.consoleDialogue?.setText("Wizard");
-    //     }
-    //     if (text === "mv Wizard" && this.curDir === "Magic") {
-    //         //set button to be visible
-    //     }
-    //     if (text === "cd .." && this.curDir === "Magic") {
-    //         this.curDir = "Troops";
-    //     }
-    //     if (text === "cd .." && this.curDir == "Troops") {
-    //         this.curDir = "";
-    //     }
-
-    // return{
-    //     this.consoleDialogue,
-    //     this.curDir,
-    //     text
-    // }
-
-    //};
 
     private enemyHitWall() {
         console.log("hit wall enemy");
@@ -386,6 +248,58 @@ export default class MainScene extends Phaser.Scene {
     increaseCurrency(amount: number) {
         this.currency += amount;
         this.currencyText.setText(`Currency: ${this.currency}`);
+    }
+
+    private createInputBox(
+        x: number,
+        y: number,
+        width: number
+    ): HTMLInputElement {
+        const input = document.createElement("input");
+        input.type = "text";
+        input.style.position = "absolute";
+        input.style.left = `${x}px`;
+        input.style.top = `${y}px`;
+        input.style.width = `${width}px`;
+        input.style.fontSize = "20px";
+        input.style.backgroundColor = "#000";
+        input.style.color = "green";
+        input.style.border = "1px solid #888";
+        input.style.padding = "5px";
+        input.style.outline = "none";
+        input.style.zIndex = "1";
+        document.body.appendChild(input);
+
+        input.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+                const command = input.value;
+                this.commandLine?.processCommand(command);
+                input.value = "";
+            }
+        });
+
+        return input;
+    }
+
+    private createOutputBox(
+        x: number,
+        y: number,
+        width: number,
+        height: number
+    ): Phaser.GameObjects.Text {
+        const outputBox = this.add.text(x, y, "", {
+            fontSize: "24px",
+            color: "green",
+            backgroundColor: "#000000",
+            wordWrap: { width: width },
+            padding: { top: 10, bottom: 10, left: 10, right: 10 },
+        });
+        outputBox.setFixedSize(width, height);
+        return outputBox;
+    }
+
+    updateOutputText(output: string) {
+        this.outputBox?.setText(output);
     }
 
     update() {
