@@ -8,7 +8,6 @@ import { Soldier } from "../objects/SoldierChar";
 import { Wizard } from "../objects/WizardChar";
 import { CharacterManager } from "../objects/CharacterManager";
 import { GameCharacter } from "../objects/GameCharacter";
-import { terminalCommandInterface } from "../interfaces/terminalCommandInterface";
 import { Board } from "../objects/board";
 import { CommandLine } from "../objects/commandLine";
 
@@ -33,14 +32,9 @@ export default class MainScene extends Phaser.Scene {
     public characterManager: CharacterManager; //is a list of all the characters
     private userInput: string = "";
     private consoleDialogue?: Phaser.GameObjects.Text;
-    //private eventEmitter = new Phaser.Events.EventEmitter();
+    private eventEmitter = new Phaser.Events.EventEmitter();
     private instructionDialogue?: Phaser.GameObjects.Text;
-    //private eventEmitter: Phaser.Events.EventEmitter;
-    //private lsTut: boolean = false;
-    //private cdTut: boolean = false;
-    //private curDir?: string = "";
-    //private cdBackTut: boolean = false;
-    //private cdLsTut: boolean = false;
+    private cdLsTut: boolean = false;
     private won: boolean = false;
     private inputBox: HTMLInputElement;
     private outputBox?: Phaser.GameObjects.Text;
@@ -52,20 +46,7 @@ export default class MainScene extends Phaser.Scene {
         this.characterManager = new CharacterManager();
         this.health = 100; // Initialize health
         this.currency = 50; // Starting currency
-    //private readonly prompt: string = "> ";
-    //private inputElement: HTMLInputElement;
-   // private xCoords = [600, 700, 800];
-    
-      /*
-    constructor(eventEmitter: Phaser.Events.EventEmitter) {
-        super({ key: "MainScene" });
-        this.characterManager = new CharacterManager();
-        this.health = 100; // Initialize health
-        this.eventEmitter = eventEmitter;
-        this.inputElement = document.createElement("input");
-        this.inputElement.type = "text";
     }
-    */
 
     create() {
         const map_boardConfig = {
@@ -173,12 +154,12 @@ export default class MainScene extends Phaser.Scene {
             zombie.body?.setSize(20, 55); //sets the hitbox size for the zombies
             return true;
         });
-        //const sButton = this.add.image(500, 100, "button").setInteractive();
-        //const rButton = this.add.image(800, 100, "button").setInteractive();
-        //const wButton = this.add.image(1100, 100, "button").setInteractive();
-        // sButton.setVisible(false);
-        // rButton.setVisible(false);
-        // wButton.setVisible(false);
+        const sButton = this.add.image(500, 100, "button").setInteractive();
+        const rButton = this.add.image(800, 100, "button").setInteractive();
+        const wButton = this.add.image(1100, 100, "button").setInteractive();
+        sButton.setVisible(false);
+        rButton.setVisible(false);
+        wButton.setVisible(false);
         this.physics.add.collider(
             this.grunts,
             this.edge,
@@ -193,47 +174,6 @@ export default class MainScene extends Phaser.Scene {
             undefined,
             this
         );
-        //const randomIndexY = Phaser.Math.Between(0, this.yCoords.length - 1);
-       //const randomIndexX = Phaser.Math.Between(0, this.xCoords.length - 1);
-      /*
-        sButton.on("pointerdown", () => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            let soldier1 = new Soldier(
-                this,
-                this.xCoords[randomIndexX],
-                this.yCoords[randomIndexY]
-            );
-            this.characterManager.addCharacter(soldier1);
-            console.log("button pressed");
-        });
-        rButton.on("pointerdown", () => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            let ranger1 = new Ranger(
-                this,
-                this.xCoords[randomIndexX],
-                this.yCoords[randomIndexY]
-            );
-            this.characterManager.addCharacter(ranger1);
-            console.log("button pressed");
-        });
-        wButton.on("pointerdown", () => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            let wizard1 = new Wizard(
-                this,
-                this.xCoords[randomIndexX],
-                this.yCoords[randomIndexY]
-            );
-            this.characterManager.addCharacter(wizard1);
-            console.log("button pressed");
-        });
-        // this.terminalManager = new TerminalManager(
-        //     this.eventEmitter,
-        // );
-        */
-        // Listen for the userInput event
-        // this.eventEmitter.on("userInput", (userInput: string) => {
-        //     this.handleConsoleText(userInput);
-        // });
 
         // Command Line Console
         this.consoleDialogue = this.add.text(100, 160, "", {
@@ -282,132 +222,6 @@ export default class MainScene extends Phaser.Scene {
             }
         );
     }
-        /*
-        this.inputElement.style.position = "fixed";
-        this.inputElement.style.bottom = "10px";
-        this.inputElement.style.left = "25%";
-        this.inputElement.style.width = "40%";
-        this.inputElement.style.height = "40px";
-        this.inputElement.style.border = "1px solid #ccc";
-        this.inputElement.style.backgroundColor = "#2D2E2C";
-        this.inputElement.style.color = "white";
-        document.body.appendChild(this.inputElement);
-
-        this.inputElement.value = this.prompt;
-        this.inputElement.focus();
-        this.inputElement.addEventListener(
-            "keydown",
-            this.handleEnter.bind(this)
-        );
-    }
-    */
-    /*
-    public handleEnter(event: KeyboardEvent) {
-        if (event.key === "Enter") {
-            const userInput = this.inputElement.value;
-            this.eventEmitter.emit("userInput", userInput);
-            // Clear input field after processing
-            this.inputElement.value = this.prompt;
-        }
-        if (event.key === " ") {
-            this.inputElement.value += " ";
-        }
-        if (event.key == "Backspace") {
-            //prevent the elimination of the prompt
-            if (this.inputElement.value === this.prompt) {
-                event.preventDefault();
-            }
-        }
-    }
-    */
-    // private handleConsoleText = (
-    //     text: string
-    // ): terminalCommandInterface => {
-    //     if (text === "cd .") {
-    //         this.consoleDialogue?.setText("");
-    //         this.curDir === "";
-    //     }
-    //     // tutorial
-    //     if (text === "ls" && this.curDir === "") {
-    //         this.consoleDialogue?.setText("HiddenTexts  Troops");
-    //     }
-    //     if (text === "cd HiddenTexts") {
-    //         this.consoleDialogue?.setText("");
-    //         this.curDir = "HiddenTexts";
-    //     }
-    //     if (text === "ls" && this.curDir === "HiddenTexts") {
-    //         this.consoleDialogue?.setText("README");
-    //     }
-    //     if (text === "nano" && this.curDir === "HiddenTexts") {
-    //         this.consoleDialogue?.setText("");
-    //     }
-    //     if (text === "cd .." && this.curDir === "HiddenTexts") {
-    //         this.consoleDialogue?.setText("");
-    //         this.curDir = "";
-    //     }
-    //     // main game
-    //     // getting to the solider and back
-    //     if (text === "ls" && this.curDir === "Troops") {
-    //         this.consoleDialogue?.setText("Physical  Magic");
-    //     }
-    //     if (text === "cd Physical" && this.curDir === "Troops") {
-    //         this.consoleDialogue?.setText("");
-    //         this.curDir = "Troops";
-    //     }
-    //     if (text === "ls" && this.curDir === "Troops") {
-    //         this.consoleDialogue?.setText("Soldier Ranger");
-    //     }
-    //     if (text === "mv Solider" && this.curDir === "Physical") {
-    //         //set button to be visible
-    //     }
-    //     if (text === "cd .." && this.curDir === "Physical") {
-    //         this.curDir = "Troops";
-    //     }
-    //     if (text === "cd .." && this.curDir == "Troops") {
-    //         this.curDir = "";
-    //     }
-    //     // getting to the ranger and back
-    //     if (text === "ls" && this.curDir === "Troops") {
-    //        this.consoleDialogue?.setText("Physical  Magic");
-    //     }
-    //     if (text === "cd Physical" && this.curDir === "Troops") {
-    //         this.consoleDialogue?.setText("");
-    //        this.curDir = "Troops";
-    //     }
-    //     if (text === "ls" && this.curDir === "Physical") {
-    //         this.consoleDialogue?.setText("Solider  Ranger");
-    //     }
-    //     if (text === "mv Ranger" && this.curDir === "Physical") {
-    //         //set button to be visible
-    //     }
-    //     //getting to the wizard and back
-    //     if (text === "ls" && this.curDir === "Troops") {
-    //         this.consoleDialogue?.setText("Physical  Magic");
-    //     }
-    //     if (text === "cd Magic" && this.curDir === "Troops") {
-    //         this.consoleDialogue?.setText("Wizard");
-    //         this.curDir = "Magic";
-    //     }
-    //     if (text === "ls" && this.curDir === "Magic") {
-    //         this.consoleDialogue?.setText("Wizard");
-    //     }
-    //     if (text === "mv Wizard" && this.curDir === "Magic") {
-    //         //set button to be visible
-    //     }
-    //     if (text === "cd .." && this.curDir === "Magic") {
-    //         this.curDir = "Troops";
-    //     }
-    //     if (text === "cd .." && this.curDir == "Troops") {
-    //         this.curDir = "";
-    //     }
-
-    // return{
-    //     consoleDialogue,
-    //     curDir?:this.curDir,
-    //     text
-    // }
-
-    //};
 
     private enemyHitWall() {
         console.log("hit wall enemy");
