@@ -184,9 +184,9 @@ export default class MainScene extends Phaser.Scene {
 
         this.fpsText = new FpsText(this);
 
-        this.outputBox = this.createOutputBox(100, 200, 600, 200);
+        this.outputBox = this.createOutputBox(870, 0, 410, 650);
 
-        this.inputBox = this.createInputBox(100, 450, 600);
+        this.inputBox = this.createInputBox(670, 575, 310);
 
         const message = `Phaser v${Phaser.VERSION}`;
         this.add
@@ -257,9 +257,7 @@ export default class MainScene extends Phaser.Scene {
     ): HTMLInputElement {
         const input = document.createElement("input");
         input.type = "text";
-        input.style.position = "absolute";
-        input.style.left = `${x}px`;
-        input.style.top = `${y}px`;
+        input.style.position = "fixed"; // Change to `fixed` position
         input.style.width = `${width}px`;
         input.style.fontSize = "20px";
         input.style.backgroundColor = "#000";
@@ -268,8 +266,24 @@ export default class MainScene extends Phaser.Scene {
         input.style.padding = "5px";
         input.style.outline = "none";
         input.style.zIndex = "1";
+
         document.body.appendChild(input);
 
+        const updateInputPosition = () => {
+            const canvas = this.game.canvas;
+            const rect = canvas.getBoundingClientRect(); // Get the canvas's bounding rectangle
+
+            input.style.left = `${rect.left + x}px`; // Use the canvas's position for `left`
+            input.style.top = `${rect.top + y}px`; // Use the canvas's position for `top`
+        };
+
+        // Set the initial position
+        updateInputPosition();
+
+        // Update the position on window resize
+        window.addEventListener("resize", updateInputPosition);
+
+        // Process the command on 'Enter' key
         input.addEventListener("keydown", (event) => {
             if (event.key === "Enter") {
                 const command = input.value;
