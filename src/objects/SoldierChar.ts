@@ -14,7 +14,7 @@ export class Soldier extends GameCharacter {
             this.scene,
             this.x + 50,
             this.y,
-            "arrowTexture",
+            "fireBallTexture",
             this.dmg
         );
         projectile.body?.setSize(40, 10);
