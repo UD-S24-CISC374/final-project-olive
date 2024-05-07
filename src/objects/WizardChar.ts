@@ -14,7 +14,7 @@ export class Wizard extends GameCharacter {
             this.scene,
             this.x + 50,
             this.y,
-            "energyBallTexture",
+            "arrowTexture",
             this.dmg
         );
         projectile.body?.setSize(40, 10);
