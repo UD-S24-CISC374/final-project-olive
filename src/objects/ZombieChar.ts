@@ -5,7 +5,7 @@ import MainScene from "../scenes/mainScene";
 
 export class Zombie extends GameCharacter {
     constructor(scene: Phaser.Scene, x: number, y: number) {
-        super(scene, "Zombie", 50, x, y, "zombieTexture", 100, 10);
+        super(scene, "Zombie", 50, x, y, "zombieTexture", 0, 10);
     }
 
     attack(): void {
@@ -19,5 +19,20 @@ export class Zombie extends GameCharacter {
         );
         projectile.body?.setSize(40, 10);
         (this.scene as MainScene).projectiles?.add(projectile); // Cast to MainScene to access projectiles
+    }
+    takeDamage(damage: number): void {
+        this.health -= damage;
+        if (this.health <= 0) {
+            this.alive = false;
+            this.dropCurrency(); // Drop currency when the zombie dies
+            (this.scene as MainScene).characterManager.removeCharacter(this);
+        }
+        console.log(`${this.name} is taking damage.`);
+    }
+
+    private dropCurrency() {
+        const scene = this.scene as MainScene;
+        const currencyDrop = 5; // Fixed amount of currency to drop
+        scene.increaseCurrency(currencyDrop);
     }
 }
