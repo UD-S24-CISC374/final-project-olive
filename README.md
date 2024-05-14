@@ -1,27 +1,36 @@
-Game Name
+# Game Name
+
 Terminal Tactics
 
-Team Color
+# Team Color
+
 Olive
 
-Developers
+# Developers
+
 Lawrence Collins (larryc@udel.edu)
 Victor Vasquez (vicvas@udel.edu)
 
-Blurb
+# Blurb
+
 In "Terminal Tactics," players face a zombie onslaught using strategic Unix commands as their arsenal. Mimicking the tower defense genre, players must strategically arrange their troops in the correct sequence to repel the zombie invasion. Just like in "Plants vs. Zombies," each command possesses unique attributes, from defensive capabilities to offensive strikes, requiring players to think tactically to outsmart the undead hordes. This educational twist not only challenges players' gaming skills but also enhances their understanding of Unix commands, making "Terminal Tactics" an engaging fusion of entertainment and education in the battle against the undead.
 
-Basic Instructions
-Type into the command line to find your troops (cd, ls, etc)
+# Basic Instructions
 
-Screenshot
+Type into the command line to find your troops (cd, ls, etc.)
+
+# Screenshot
+
 TEXT GOES HERE
 
-Gameplay Video
+# Gameplay Video
+
 TEXT GOES HERE
 
-Educational Game Design Document
+# Educational Game Design Document
+
 Link to our [egdd](Educational Game Design Document)
 
-Credits
+# Credits
+
 TEXT GOES HERE
