@@ -1,28 +1,20 @@
 // CommandLine.ts
 import Phaser from "phaser";
-import { FolderSystem } from "./folderSystem";
+import { FolderSystem } from "../objects/folderSystem";
 import { CharacterManager } from "../objects/CharacterManager";
-//import MainScene from "../scenes/mainScene";
-import { GameCharacter } from "../objects/GameCharacter";
 import MainScene from "../scenes/mainScene";
 
 export class CommandLine {
-    private folderSystem: FolderSystem;
+    folderSystem: FolderSystem;
     private outputText: Phaser.GameObjects.Text;
     private prompt: string = "$ ";
-    private characterManager: CharacterManager;
-    private currency: number;
-    private mainScene: MainScene;
+    characterManager: CharacterManager;
+    mainScene: MainScene;
     private inputBox: HTMLInputElement;
 
-    constructor(
-        scene: MainScene,
-        characterManager: CharacterManager,
-        currency: number
-    ) {
+    constructor(scene: MainScene, characterManager: CharacterManager) {
         this.folderSystem = new FolderSystem();
         this.characterManager = characterManager;
-        this.currency = currency;
         this.mainScene = scene;
     }
 
@@ -76,25 +68,40 @@ export class CommandLine {
             return `Character not found: ${characterName}`;
         }
 
-        if (characterPrice > this.currency) {
+        if (characterPrice > this.mainScene.currency) {
             return `Insufficient currency to purchase ${characterName}`;
+        }
+
+        const coordsToBoard = this.mainScene.board_map.getCellPosition(x, y);
+
+        if (
+            !this.mainScene.board_map.isWithinBounds(
+                coordsToBoard.x,
+                coordsToBoard.y
+            )
+        ) {
+            return `Invalid coordinates (${x}, ${y})`;
+        }
+
+        //create statement that wont allow purchase if another char in same position
+        if (this.characterManager.sameCoord(coordsToBoard.x, coordsToBoard.y)) {
+            return `Another character is already in the position (${x}, ${y})`;
         }
 
         const gameCharacter = this.folderSystem.createCharacter(
             characterName,
             this.mainScene,
-            x,
-            y
+            coordsToBoard.x,
+            coordsToBoard.y
         );
 
         if (!gameCharacter) {
             return `Failed to instantiate ${characterName}`;
         }
-
-        this.currency -= characterPrice;
         this.mainScene.increaseCurrency(-characterPrice);
         this.characterManager.addCharacter(gameCharacter);
-        return `Purchased ${characterName} for ${characterPrice}`;
+
+        return `Purchased ${characterName} for ${characterPrice} and placed it at (${x}, ${y})`;
     }
 
     private removeCharacter(
@@ -105,21 +112,25 @@ export class CommandLine {
         if (isNaN(x) || isNaN(y)) {
             return `Invalid coordinates. Usage: remove <characterName> <x> <y>`;
         }
+        const coordsToBoard = this.mainScene.board_map.getCellPosition(x, y);
 
-        const character = Array.from(this.characterManager.characters).find(
-            (char) => {
-                const gameChar = char as GameCharacter;
-                return (
-                    gameChar.name === characterName &&
-                    Math.abs(gameChar.x - x) < 1 &&
-                    Math.abs(gameChar.y - y) < 1
-                );
-            }
-        );
+        if (
+            !this.mainScene.board_map.isWithinBounds(
+                coordsToBoard.x,
+                coordsToBoard.y
+            )
+        ) {
+            return `Invalid coordinates (${x}, ${y})`;
+        }
 
-        if (character) {
-            this.characterManager.removeCharacter(character);
-            return `Removed ${characterName} at (${x}, ${y})`;
+        if (
+            this.characterManager.removeCharacterByNameAndPosition(
+                characterName,
+                coordsToBoard.x,
+                coordsToBoard.y
+            )
+        ) {
+            return `Removed ${characterName} at position (${x}, ${y})`;
         }
 
         return `Character not found: ${characterName} at (${x}, ${y})`;

@@ -23,12 +23,11 @@ export default class TitleScene extends Phaser.Scene {
         const scaleY = this.cameras.main.height / background.height;
         const maxScale = Math.max(scaleX, scaleY);
         background.setScale(maxScale).setScrollFactor(0);
-        let title = this.add.text(centerX, centerY, "Terminal Tactics");
-        title.setFont("Optima");
-        title.setScale(1.5);
+        let title = this.add.text(centerX - 200, centerY, "Terminal Tactics");
+        title.setFontSize(50);
 
         let playButton = this.add
-            .image(centerX + 50, centerY, "play_button")
+            .image(centerX, centerY + 50, "play_button")
             .setInteractive();
 
         playButton.on("pointerover", () => {
@@ -45,7 +44,7 @@ export default class TitleScene extends Phaser.Scene {
         });
 
         let tutorialButton = this.add
-            .image(centerX + 100, centerY, "tutorial_icon")
+            .image(centerX, centerY + 100, "tutorial_icon")
             .setInteractive()
             .setScale(0.2);
 

@@ -1,43 +1,60 @@
 import Phaser from "phaser";
 //import PhaserLogo from "../objects/phaserLogo";
 import FpsText from "../objects/fpsText";
-import { Zombie } from "../objects/ZombieChar"; // Assuming you have a Zombie class that extends GameCharacter
-import { Ranger } from "../objects/RangerChar";
 import { Projectile } from "../objects/Projectile";
-import { Soldier } from "../objects/SoldierChar";
-import { Wizard } from "../objects/WizardChar";
 import { CharacterManager } from "../objects/CharacterManager";
 import { GameCharacter } from "../objects/GameCharacter";
 import { Board } from "../objects/board";
 import { CommandLine } from "../objects/commandLine";
+import { WaveManager } from "../objects/waveManager";
+import { BaddiesManager } from "../objects/baddiesManager";
+import { Zombie1 } from "../objects/Zombie1Char";
+import { BaddyCharacter } from "../objects/baddyCharacter";
 
 export default class MainScene extends Phaser.Scene {
+    private inputBox: HTMLInputElement;
+    private outputBox?: Phaser.GameObjects.Text;
     private edge: Phaser.Physics.Arcade.StaticGroup;
-    private grunts?: Phaser.Physics.Arcade.Group;
+    //private grunts?: Phaser.Physics.Arcade.Group;
+    waveManager: WaveManager;
+    baddiesManager: BaddiesManager;
     public projectiles?: Phaser.Physics.Arcade.Group;
     fpsText: FpsText;
     public board_map: Board;
+    private map_boardConfig = {
+        rows: 5,
+        cols: 7,
+        cellWidth: 85,
+        cellHeight: 100,
+        posX: 280, // Centered X position for the board
+        posY: 150, // Centered Y position for the board
+    };
+    public spawn_board: Board;
+    private spawn_boardConfig = {
+        rows: 5,
+        cols: 5,
+        cellWidth: 85,
+        cellHeight: 100,
+        posX: 870, // Centered X position for the board
+        posY: 150, // Centered Y position for the board
+    };
     private gameOver = false;
     private gruntAmount = 50;
     private currentWave = 0;
     private maxWave = 5;
     private score = 0;
     private scoreText: Phaser.GameObjects.Text;
-    private currency: number; // Player currency
+    public currency: number; // Player currency
     private health: number; // Health of the base
     private healthBar: Phaser.GameObjects.Graphics;
     private end: Phaser.Physics.Arcade.StaticGroup;
     private finish: Phaser.Physics.Arcade.StaticGroup;
-    private yCoords = [320, 360, 400, 440, 485, 520, 560]; //coords in relation to the board tiles
     public characterManager: CharacterManager; //is a list of all the characters
     private userInput: string = "";
     private consoleDialogue?: Phaser.GameObjects.Text;
     private eventEmitter = new Phaser.Events.EventEmitter();
     private instructionDialogue?: Phaser.GameObjects.Text;
-    private cdLsTut: boolean = false;
     private won: boolean = false;
-    private inputBox: HTMLInputElement;
-    private outputBox?: Phaser.GameObjects.Text;
     private readonly prompt: string = "";
     currencyText: Phaser.GameObjects.Text;
     private commandLine?: CommandLine;
@@ -51,15 +68,8 @@ export default class MainScene extends Phaser.Scene {
     }
 
     create() {
-        const map_boardConfig = {
-            rows: 5,
-            cols: 7,
-            cellWidth: 85,
-            cellHeight: 100,
-            posX: 280, // Centered X position for the board
-            posY: 150, // Centered Y position for the board
-        };
-        const map_board = new Board(this, map_boardConfig);
+        //map board
+        this.board_map = new Board(this, this.map_boardConfig);
         //map image
         this.add.image(400, 350, "map").setScale(1);
         //background audio
@@ -68,6 +78,11 @@ export default class MainScene extends Phaser.Scene {
         //Win and Lose images
         var winImg = this.add.image(500, 500, "youWin");
         winImg.alpha = 0;
+        //enemy spawn board
+        this.spawn_board = new Board(this, this.spawn_boardConfig);
+        this.baddiesManager = new BaddiesManager(this);
+
+        this.waveManager = new WaveManager(this, this.baddiesManager);
         //currency
         // Add currency text
         this.currencyText = this.add.text(
@@ -94,33 +109,7 @@ export default class MainScene extends Phaser.Scene {
         this.healthBar = this.add.graphics();
         this.updateHealthBar();
 
-        this.commandLine = new CommandLine(
-            this,
-            this.characterManager,
-            this.currency
-        );
-
-        // create the board for enemy spawn
-        const spawn_boardConfig = {
-            rows: 5,
-            cols: 5,
-            cellWidth: 85,
-            cellHeight: 100,
-            posX: 870, // Centered X position for the board
-            posY: 150, // Centered Y position for the board
-        };
-
-        //enemy spawn board
-        const spawn_board = new Board(this, spawn_boardConfig);
-
-        const soldierPosition = map_board.getCellPosition(1, 4);
-        let soldier = new Soldier(this, soldierPosition.x, soldierPosition.y);
-        let ranger = new Ranger(this, 330, 500);
-        let wizard = new Wizard(this, 330, 600);
-
-        this.characterManager.addCharacter(soldier);
-        this.characterManager.addCharacter(ranger);
-        this.characterManager.addCharacter(wizard);
+        this.commandLine = new CommandLine(this, this.characterManager);
 
         this.time.addEvent({
             delay: 2000, // Attack every 2000 ms (2 seconds)
@@ -133,8 +122,10 @@ export default class MainScene extends Phaser.Scene {
             loop: true,
         });
 
+        // When creating projectiles, ensure they are active and can interact
         this.projectiles = this.physics.add.group({
             classType: Projectile,
+            runChildUpdate: true, // Ensures projectile update logic is executed
         });
 
         this.edge = this.physics.add.staticGroup();
@@ -149,33 +140,12 @@ export default class MainScene extends Phaser.Scene {
         platform.body?.setSize(30, 500);
         platform.setVisible(false);
 
-        this.grunts = this.physics.add.group({
-            classType: Zombie, // Ensure all members of the group are Zombie instances
-            key: "zombieTexture",
-            repeat: this.gruntAmount - 1,
-            setXY: { x: 850, y: 525, stepX: 60 },
-        });
-        this.grunts.children.iterate((child) => {
-            const zombie = child as Zombie;
-            //const randomIndex = Phaser.Math.Between(0, this.yCoords.length - 1);
-            zombie.setY(spawn_board.getRandomCellPosition().y);
-            zombie.setVelocityX(Phaser.Math.FloatBetween(-50, -10)); // zombie speed
-            zombie.setPushable(false);
-            return true;
-        });
-        this.grunts.children.iterate((child) => {
-            const zombie = child as Zombie; // Ensure correct casting
-            zombie.setScale(1.1); // Now you can safely apply setScale
-            zombie.setOrigin(0.5, 0.95); // Adjusting origin for better alignment
-            zombie.body?.setSize(20, 55); //sets the hitbox size for the zombies
-            return true;
-        });
         this.physics.add.collider(
-            this.grunts,
+            this.baddiesManager.baddies,
             this.edge,
             (zombie, platform) => {
                 if (
-                    zombie instanceof Zombie &&
+                    zombie instanceof Zombie1 &&
                     platform instanceof Phaser.Physics.Arcade.Sprite
                 ) {
                     this.handleHitWall(zombie);
@@ -198,14 +168,6 @@ export default class MainScene extends Phaser.Scene {
 
         this.inputBox = this.createInputBox(670, 575, 310);
 
-        const message = `Phaser v${Phaser.VERSION}`;
-        this.add
-            .text(this.cameras.main.width - 15, 15, message, {
-                color: "#000000",
-                fontSize: "24px",
-            })
-            .setOrigin(1, 0);
-
         this.score = 0;
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         let scoreText = this.add.text(15, 50, "Score: 0", {
@@ -213,17 +175,34 @@ export default class MainScene extends Phaser.Scene {
             color: "black",
         });
 
+        this.waveManager.startNextWave(); // Start the first wave
+
         this.physics.add.collider(
-            this.grunts,
+            this.baddiesManager.baddies,
+            this.edge,
+            (zombie, platform) => {
+                if (
+                    zombie instanceof Zombie1 &&
+                    platform instanceof Phaser.Physics.Arcade.Sprite
+                ) {
+                    this.handleHitWall(zombie);
+                }
+            },
+            undefined,
+            this
+        );
+
+        this.physics.add.collider(
+            this.baddiesManager.baddies,
             this.projectiles,
             (zombie, projectile) => {
                 // Cast zombie and projectile to their expected types
                 let z = zombie as Phaser.Physics.Arcade.Sprite;
                 let p = projectile as Phaser.Physics.Arcade.Sprite;
 
-                if (map_board.isWithinBounds(z.x, z.y)) {
+                if (this.board_map.isWithinBounds(z.x, z.y)) {
                     // Ensure the collision affects only those zombies within the board
-                    if (z instanceof Zombie && p instanceof Projectile) {
+                    if (z instanceof Zombie1 && p instanceof Projectile) {
                         z.takeDamage(p.damage);
                         this.flashEnemy(z);
                     }
@@ -247,9 +226,10 @@ export default class MainScene extends Phaser.Scene {
     private enemyHitWall() {
         console.log("hit wall enemy");
     }
-    private handleHitWall(zombie: Zombie): void {
+
+    private handleHitWall(baddy: BaddyCharacter): void {
         // Assume each collision with the platform causes a fixed amount of damage
-        this.health -= zombie.dmg;
+        this.health -= baddy.dmg;
         this.updateHealthBar();
 
         if (this.health <= 50) {
@@ -261,9 +241,9 @@ export default class MainScene extends Phaser.Scene {
         if (this.health <= 0) {
             this.lose();
         }
-        zombie.destroy();
+        this.baddiesManager.removeCharacter("Zombie1", baddy);
     }
-    flashEnemy(zombie: Zombie) {
+    flashEnemy(zombie: Zombie1) {
         const originalTint = zombie.tint;
         zombie.setTint(0xff0000);
         setTimeout(() => {
@@ -367,31 +347,14 @@ export default class MainScene extends Phaser.Scene {
 
     update() {
         this.fpsText.update();
-        if (this.gruntAmount === 0) {
-            if (this.currentWave === this.maxWave) {
-                //If we're on wave 3 (max) and gruntAmount is zero, that means the player has defeated all waves
-                //this.victoryText.visible = true;
-                this.gameOver = false;
-            } else {
-                this.currentWave += 1; //Increment the wave amount to make more baddies spawn
-                this.gruntAmount = this.currentWave * 2;
-                this.grunts?.createMultiple({
-                    key: "zombieTexture",
-                    repeat: this.gruntAmount - 1,
-                    setXY: { x: 60, y: 0, stepX: 60 },
-                });
-                this.grunts?.children.iterate((child) => {
-                    const zombie = child as Phaser.Physics.Arcade.Sprite;
-                    zombie.setVelocity(0, Phaser.Math.FloatBetween(-50, -10));
-                    return true;
-                });
-            }
-        }
+        this.waveManager.update();
+
         this.projectiles?.children.iterate((child) => {
             const projectile = child as Projectile; // Ensure correct casting
             projectile.setVelocityX(300);
             return true;
         });
         this.characterManager.update();
+        this.baddiesManager.update();
     }
 }
