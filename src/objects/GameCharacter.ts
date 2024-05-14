@@ -40,7 +40,6 @@ export abstract class GameCharacter extends Phaser.Physics.Arcade.Sprite {
             this.alive = false;
             (this.scene as MainScene).characterManager.removeCharacter(this);
         }
-        console.log(`${this.name} is taking damage.`);
     }
 
     // Method to remove the character from the game, e.g., when health is 0.
