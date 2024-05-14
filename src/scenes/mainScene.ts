@@ -18,7 +18,7 @@ export default class MainScene extends Phaser.Scene {
     fpsText: FpsText;
     public board_map: Board;
     private gameOver = false;
-    private gruntAmount = 10;
+    private gruntAmount = 50;
     private currentWave = 0;
     private maxWave = 5;
     private score = 0;
@@ -41,6 +41,8 @@ export default class MainScene extends Phaser.Scene {
     private readonly prompt: string = "";
     currencyText: Phaser.GameObjects.Text;
     private commandLine?: CommandLine;
+    gameMusic: Phaser.Sound.BaseSound;
+
     constructor() {
         super({ key: "MainScene" });
         this.characterManager = new CharacterManager();
@@ -60,7 +62,12 @@ export default class MainScene extends Phaser.Scene {
         const map_board = new Board(this, map_boardConfig);
         //map image
         this.add.image(400, 350, "map").setScale(1);
-
+        //background audio
+        this.gameMusic = this.sound.add("backgroundMusic");
+        this.gameMusic.play({ volume: 0.4, loop: true });
+        //Win and Lose images
+        var winImg = this.add.image(500, 500, "youWin");
+        winImg.alpha = 0;
         //currency
         // Add currency text
         this.currencyText = this.add.text(
@@ -72,6 +79,15 @@ export default class MainScene extends Phaser.Scene {
                 color: "white",
             }
         );
+        //help button
+        let help = this.add.image(800, 100, "questionMark").setInteractive();
+        help.setScale(1 / 2);
+        help.on("pointerover", () => {
+            console.log("hovered over");
+        });
+        help.on("pointerout", () => {
+            console.log("not hovered over");
+        });
 
         //health bar stuff
         this.health = 100; // Starting health
@@ -121,7 +137,6 @@ export default class MainScene extends Phaser.Scene {
             classType: Projectile,
         });
 
-        //this.edge.create(0, 0, "finishLine");
         this.edge = this.physics.add.staticGroup();
         let platform = this.edge.create(
             270,
@@ -132,6 +147,7 @@ export default class MainScene extends Phaser.Scene {
         platform.angle = 90;
         // Manually set the size of the physics body
         platform.body?.setSize(30, 500);
+        platform.setVisible(false);
 
         this.grunts = this.physics.add.group({
             classType: Zombie, // Ensure all members of the group are Zombie instances
@@ -154,12 +170,6 @@ export default class MainScene extends Phaser.Scene {
             zombie.body?.setSize(20, 55); //sets the hitbox size for the zombies
             return true;
         });
-        const sButton = this.add.image(500, 100, "button").setInteractive();
-        const rButton = this.add.image(800, 100, "button").setInteractive();
-        const wButton = this.add.image(1100, 100, "button").setInteractive();
-        sButton.setVisible(false);
-        rButton.setVisible(false);
-        wButton.setVisible(false);
         this.physics.add.collider(
             this.grunts,
             this.edge,
@@ -215,12 +225,23 @@ export default class MainScene extends Phaser.Scene {
                     // Ensure the collision affects only those zombies within the board
                     if (z instanceof Zombie && p instanceof Projectile) {
                         z.takeDamage(p.damage);
+                        this.flashEnemy(z);
                     }
                 }
                 // Destroy the projectile regardless of the zombie's position
                 p.destroy();
             }
         );
+        if (this.gruntAmount === 0) {
+            this.win();
+            this.tweens.add({
+                targets: winImg,
+                alpha: 1,
+                duration: 2000,
+                ease: "Linear",
+                delay: 0,
+            });
+        }
     }
 
     private enemyHitWall() {
@@ -231,12 +252,40 @@ export default class MainScene extends Phaser.Scene {
         this.health -= zombie.dmg;
         this.updateHealthBar();
 
+        if (this.health <= 50) {
+            this.gameMusic.stop();
+            this.gameMusic = this.sound.add("endGameMusic");
+            this.gameMusic.play();
+        }
+
         if (this.health <= 0) {
-            this.gameOver = true;
-            this.physics.pause();
-            console.log("Game Over");
+            this.lose();
         }
         zombie.destroy();
+    }
+    flashEnemy(zombie: Zombie) {
+        const originalTint = zombie.tint;
+        zombie.setTint(0xff0000);
+        setTimeout(() => {
+            zombie.setTint(originalTint);
+        }, 500);
+    }
+    private win() {
+        this.gameMusic.stop();
+        this.gameMusic = this.sound.add("victoryMusic");
+        this.gameMusic.play({ volume: 0.4, loop: true });
+        this.physics.pause();
+        this.won = true;
+
+        console.log("Game Won");
+    }
+    private lose() {
+        this.gameMusic.stop();
+        this.gameMusic = this.sound.add("defeatMusic");
+        this.gameMusic.play({ volume: 0.4, loop: true });
+        this.gameOver = true;
+        this.physics.pause();
+        console.log("Game Over");
     }
 
     updateHealthBar() {
@@ -338,16 +387,6 @@ export default class MainScene extends Phaser.Scene {
                 });
             }
         }
-        this.grunts?.children.iterate((child, idx) => {
-            const zombie = child as Phaser.Physics.Arcade.Sprite;
-
-            if (zombie.x <= 475) {
-                console.log(idx + ":x:" + zombie.x + "y: " + zombie.y);
-            }
-
-            return true;
-        });
-
         this.projectiles?.children.iterate((child) => {
             const projectile = child as Projectile; // Ensure correct casting
             projectile.setVelocityX(300);

@@ -2,8 +2,9 @@
 import Phaser from "phaser";
 import { FolderSystem } from "./folderSystem";
 import { CharacterManager } from "../objects/CharacterManager";
-import MainScene from "../scenes/mainScene";
+//import MainScene from "../scenes/mainScene";
 import { GameCharacter } from "../objects/GameCharacter";
+import MainScene from "../scenes/mainScene";
 
 export class CommandLine {
     private folderSystem: FolderSystem;

@@ -1,4 +1,3 @@
-
 import Phaser from "phaser";
 
 export default class PreloadScene extends Phaser.Scene {
@@ -7,9 +6,7 @@ export default class PreloadScene extends Phaser.Scene {
     }
 
     preload() {
-        // this.load.image("background", "assets/img/trainGrounds.png");
-        // this.load.image("sword", "assets/img/sword.png");
-        // this.load.image("play_button", "assets/img/play_button.png");
+        //images
         this.load.image("phaser-logo", "assets/img/phaser-logo.png");
         this.load.image("grass", "assets/img/grass-sm.png");
         this.load.image("trainGrounds", "assets/img/trainGrounds.png");
@@ -29,6 +26,21 @@ export default class PreloadScene extends Phaser.Scene {
         this.load.image("map", "assets/img/map1.png");
         this.load.image("energyBallTexture", "assets/img/energy-ball-sm.png");
         this.load.image("fireBallTexture", "assets/img/fire-ball-sm.png");
+        this.load.image("youLose", "assets/img/youLose.jpeg");
+        this.load.image("youWin", "assets/img/youWin.jpeg");
+        this.load.image("questionMark", "assets/img/questionMark.png");
+        this.load.image("wizardNPC", "assets/img/wizardNPC.jpg");
+
+        //audio
+        this.load.audio("backgroundMusic", "assets/audio/backgroundMusic.mp3");
+        this.load.audio("tutorialMusic", "assets/audio/tutorialMusic.mp3");
+        this.load.audio("endGameMusic", "assets/audio/endGameMusic.mp3");
+        this.load.audio("victoryMusic", "assets/audio/victoryMusic.mp3");
+        this.load.audio("defeatMusic", "assets/audio/defeatMusic.mp3");
+        this.load.audio(
+            "titleScreenMusic",
+            "assets/audio/titleScreenMusic.mp3"
+        );
     }
 
     create() {

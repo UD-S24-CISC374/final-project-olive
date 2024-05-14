@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 
 export default class TitleScene extends Phaser.Scene {
+    menuMusic: Phaser.Sound.BaseSound;
     constructor() {
         super({ key: "TitleScene" });
     }
@@ -14,15 +15,20 @@ export default class TitleScene extends Phaser.Scene {
     create() {
         const centerX = this.cameras.main.width / 2;
         const centerY = this.cameras.main.height / 2;
+        this.menuMusic = this.sound.add("titleScreenMusic");
+        this.menuMusic.play({ volume: 0.4, loop: true });
 
         const background = this.add.image(0, 0, "background").setOrigin(0, 0);
         const scaleX = this.cameras.main.width / background.width;
         const scaleY = this.cameras.main.height / background.height;
         const maxScale = Math.max(scaleX, scaleY);
         background.setScale(maxScale).setScrollFactor(0);
+        let title = this.add.text(centerX, centerY, "Terminal Tactics");
+        title.setFont("Optima");
+        title.setScale(1.5);
 
         let playButton = this.add
-            .image(centerX, centerY, "play_button")
+            .image(centerX + 50, centerY, "play_button")
             .setInteractive();
 
         playButton.on("pointerover", () => {
@@ -34,11 +40,12 @@ export default class TitleScene extends Phaser.Scene {
         });
 
         playButton.on("pointerup", () => {
+            this.menuMusic.stop();
             this.scene.start("MainScene");
         });
 
         let tutorialButton = this.add
-            .image(800, centerY + 7, "tutorial_icon")
+            .image(centerX + 100, centerY, "tutorial_icon")
             .setInteractive()
             .setScale(0.2);
 
@@ -51,7 +58,8 @@ export default class TitleScene extends Phaser.Scene {
         });
 
         tutorialButton.on("pointerup", () => {
-            this.scene.start("MainScene");
+            this.menuMusic.stop();
+            this.scene.start("TutorialScene");
         });
     }
 }
