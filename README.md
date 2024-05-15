@@ -28,9 +28,10 @@ TEXT GOES HERE
 TEXT GOES HERE
 
 # Educational Game Design Document
-
-Link to our [egdd](Educational Game Design Document)
-
+(https://github.com/UD-S24-CISC374/final-project-olive/blob/main/docs/egdd.md)
 # Credits
 
-TEXT GOES HERE
+GitHub: Ideas and some code
+Phaser Forums: Ideas and some code
+Pixabay: Music
+
