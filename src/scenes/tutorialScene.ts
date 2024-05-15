@@ -67,7 +67,7 @@ export default class TutorialScene extends Phaser.Scene {
     private curDialogueText: string = "";
     gameMusic: Phaser.Sound.BaseSound;
     constructor() {
-        super({ key: "tutorialScene" });
+        super({ key: "TutorialScene" });
         this.characterManager = new CharacterManager();
         this.health = 100; // Initialize health
         this.currency = 50; // Starting currency
