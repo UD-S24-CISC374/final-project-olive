@@ -42,7 +42,7 @@ export default class MainScene extends Phaser.Scene {
     private gruntAmount = 50;
     private currentWave = 0;
     private maxWave = 5;
-    private score = 0;
+    //private score = 0;
     private scoreText: Phaser.GameObjects.Text;
     public currency: number; // Player currency
     public health: number; // Health of the base
@@ -99,8 +99,8 @@ export default class MainScene extends Phaser.Scene {
 
         // Create a Text object for the text
         var helpText = this.add.text(
-            graphics.x + 20,
-            graphics.y + 20,
+            150,
+            50,
             "cd:Change Directory ; ls:View content of file \n purchase(unit name,xCoord,yCoord): buy units \n remove(unit name,xCoord,yCoord): remove units",
             {
                 fontFamily: "Arial",
@@ -194,17 +194,17 @@ export default class MainScene extends Phaser.Scene {
 
         this.inputBox = this.createInputBox(670, 575, 310);
 
-        this.score = 0;
+        //this.score = 0;
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        let scoreText = this.add.text(
-            this.currencyText.x,
-            this.currencyText.y + 50,
-            "Score: 0",
-            {
-                fontSize: "20px",
-                color: "white",
-            }
-        );
+        // let scoreText = this.add.text(
+        //     this.currencyText.x,
+        //     this.currencyText.y + 50,
+        //     "Score: 0",
+        //     {
+        //         fontSize: "20px",
+        //         color: "white",
+        //     }
+        // );
 
         this.waveManager.startNextWave(); // Start the first wave
 
@@ -299,14 +299,14 @@ export default class MainScene extends Phaser.Scene {
         let loseImg = this.add.image(400, 400, "youLose");
         loseImg.setScale(0.9);
         // Create the rectangular box
-        const restartButton = this.add.graphics().setInteractive();
+        const restartButton = this.add.graphics();
         const buttonWidth = 200;
         const buttonHeight = 80;
         const buttonColor = 0xff0000;
 
         restartButton.fillStyle(buttonColor, 1);
         restartButton.fillRect(200, 200, buttonWidth, buttonHeight);
-
+        restartButton.setInteractive();
         // Add text inside the button
         const buttonText = this.add.text(
             200 + buttonWidth / 2,

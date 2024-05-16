@@ -174,14 +174,16 @@ export default class TutorialScene extends Phaser.Scene {
             "please take accept the position of leader and guide us to victory",
             "Get accustumed to the book of spells (the command line)",
             "Within this book you will cast spells to call upon your troops and defend our castle\n try casting (typing) ls to see the content of the book",
-            "Great! Now you're getting the hang of it \n try going into the ... directory using cd followed by ...",
+            "Great! Now you're getting the hang of it \n try going into the chracters directory using cd followed by chracters",
             "Now look into the contents of this directory",
             "Thats how you traverse pages (files) of the book",
+            "here you can type mv followed by a unit and a x and y coordinate(1-4) to place a unit ",
+            "At any point you can use rm followed by a unti and its coordinates to remove a unti",
+            "When you go into a units directory you can cast 'cat 'unit name' to view the file and learn more about the untis",
             "Now use this knowledge to keep the zombie hordes at bay",
             "Replacing me will be a reminder incase you forget any of these commands",
             "Keep in mind that inorder to place a troop you must have right amount of currency to purchase any of them",
             "Good luck and may your allies strike true!",
-            "Press the arrow whenever you're ready to proceed",
         ];
         //background audio
         this.gameMusic = this.sound.add("backgroundMusic");
@@ -193,8 +195,8 @@ export default class TutorialScene extends Phaser.Scene {
             this.cameras.main.worldView.y + this.cameras.main.height / 2;
         var rect = new Phaser.GameObjects.Rectangle(
             this,
-            screenCenterX,
-            screenCenterY,
+            150,
+            50,
             500,
             500,
             0x000000,
@@ -289,7 +291,6 @@ export default class TutorialScene extends Phaser.Scene {
     ): HTMLInputElement {
         const input = document.createElement("input");
         input.type = "text";
-        input.style.position = "fixed"; // Change to `fixed` position
         input.style.width = `${width}px`;
         input.style.fontSize = "20px";
         input.style.backgroundColor = "#000";
@@ -298,7 +299,11 @@ export default class TutorialScene extends Phaser.Scene {
         input.style.padding = "5px";
         input.style.outline = "none";
         input.style.zIndex = "1";
-
+        const offsetDown = 50; // Adjust as needed
+        const offsetRight = 50; // Adjust as needed
+        input.style.top = `calc(50% + ${offsetDown}px)`;
+        input.style.left = `calc(50% + ${offsetRight}px)`;
+        input.style.position = "fixed"; // Change to `fixed` position
         document.body.appendChild(input);
 
         const updateInputPosition = () => {
