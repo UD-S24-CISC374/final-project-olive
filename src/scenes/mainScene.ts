@@ -283,8 +283,12 @@ export default class MainScene extends Phaser.Scene {
         this.gameMusic.stop();
         this.gameMusic = this.sound.add("victoryMusic");
         this.gameMusic.play({ volume: 0.4, loop: true });
-        let winImg = this.add.image(400, 400, "youWin");
+        let winImg = this.add.image(400, 400, "youWin").setInteractive();
         winImg.setScale(0.9);
+        winImg.on("pointerup", () => {
+            console.log("button pushed");
+            this.scene.restart();
+        });
         this.physics.pause();
         this.won = true;
 
@@ -294,31 +298,9 @@ export default class MainScene extends Phaser.Scene {
         this.gameMusic.stop();
         this.gameMusic = this.sound.add("defeatMusic");
         this.gameMusic.play({ volume: 0.4, loop: true });
-        let loseImg = this.add.image(400, 400, "youLose");
+        let loseImg = this.add.image(400, 400, "youLose").setInteractive();
         loseImg.setScale(0.9);
-        // Create the rectangular box
-        const restartButton = this.add.graphics();
-        const buttonWidth = 200;
-        const buttonHeight = 80;
-        const buttonColor = 0xff0000;
-
-        restartButton.fillStyle(buttonColor, 1);
-        restartButton.fillRect(200, 200, buttonWidth, buttonHeight);
-        restartButton.setInteractive();
-        // Add text inside the button
-        const buttonText = this.add.text(
-            200 + buttonWidth / 2,
-            200 + buttonHeight / 2,
-            "Restart",
-            {
-                fontSize: "32px",
-                fontFamily: "Arial",
-                color: "#000000",
-                align: "center",
-            }
-        );
-        buttonText.setOrigin(0.5);
-        restartButton.on("pointerdown", () => {
+        loseImg.on("pointerup", () => {
             console.log("button pushed");
             this.scene.restart();
         });
