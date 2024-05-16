@@ -4,7 +4,7 @@ import { Wave } from "./wave";
 
 export class WaveManager {
     private waves: Wave[];
-    private currentWaveIndex: number = 0;
+    public currentWaveIndex: number = 0;
     mainScene: MainScene;
     baddiesManager: BaddiesManager;
     isWaveActive: boolean = false; // Track if a wave is active

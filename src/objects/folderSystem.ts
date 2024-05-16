@@ -5,16 +5,19 @@ import { Soldier } from "./SoldierChar";
 import { Ranger } from "./RangerChar";
 import { Wizard } from "./WizardChar";
 
-export interface Folder {
+interface Folder {
     name: string;
-    type: "folder" | "character";
+    type: "folder" | "file";
     children?: Folder[];
     price?: number;
+    health?: number;
+    damage?: number;
     createCharacter?: (
         scene: Phaser.Scene,
         x: number,
         y: number
     ) => GameCharacter;
+    content?: string; // Text content for .txt files
 }
 
 export class FolderSystem {
@@ -28,24 +31,75 @@ export class FolderSystem {
                 children: [
                     {
                         name: "soldier",
-                        type: "character",
+                        type: "folder",
+                        children: [
+                            {
+                                name: "soldier.txt",
+                                type: "file",
+                                content:
+                                    "Name: Soldier\nCost: 10\nHealth: 100\nDamage: 20",
+                            },
+                        ],
                         price: 10,
+                        health: 100,
+                        damage: 20,
                         createCharacter: (scene, x, y) =>
                             new Soldier(scene, x, y),
                     },
                     {
                         name: "ranger",
-                        type: "character",
-                        price: 15,
+                        type: "folder",
+                        children: [
+                            {
+                                name: "ranger.txt",
+                                type: "file",
+                                content:
+                                    "Name: Ranger\nCost: 20\nHealth: 100\nDamage: 50",
+                            },
+                        ],
+                        price: 30,
+                        health: 100,
+                        damage: 50,
                         createCharacter: (scene, x, y) =>
                             new Ranger(scene, x, y),
                     },
                     {
                         name: "wizard",
-                        type: "character",
+                        type: "folder",
+                        children: [
+                            {
+                                name: "wizard.txt",
+                                type: "file",
+                                content:
+                                    "Name: Wizard\nCost: 30\nHealth: 100\nDamage: 20",
+                            },
+                        ],
                         price: 20,
+                        health: 100,
+                        damage: 20,
                         createCharacter: (scene, x, y) =>
                             new Wizard(scene, x, y),
+                    },
+                ],
+            },
+            {
+                name: "baddies",
+                type: "folder",
+                children: [
+                    {
+                        name: "zombie1",
+                        type: "folder",
+                        children: [
+                            {
+                                name: "zombie1.txt",
+                                type: "file",
+                                content:
+                                    "Name: Zombie1\nCost: 0\nHealth: 50\nDamage: 10",
+                            },
+                        ],
+                        price: 0,
+                        health: 50,
+                        damage: 10,
                     },
                 ],
             },
@@ -56,16 +110,13 @@ export class FolderSystem {
 
     public findFolderByPath(path: string[]): Folder | null {
         let currentFolder: Folder = this.rootFolder;
-
-        for (const folder of path) {
-            const nextFolder = currentFolder.children?.find(
-                (child) => child.name === folder && child.type === "folder"
+        for (const part of path) {
+            if (part === "") continue; // Ignore empty parts from leading slashes or errors
+            let foundFolder = currentFolder.children?.find(
+                (f) => f.name === part && f.type === "folder"
             );
-            if (nextFolder && nextFolder.type === "folder") {
-                currentFolder = nextFolder;
-            } else {
-                return null;
-            }
+            if (!foundFolder) return null; // Early exit if any part of the path is not found
+            currentFolder = foundFolder;
         }
         return currentFolder;
     }
@@ -97,7 +148,7 @@ export class FolderSystem {
         }
 
         const folderContents = currentFolder.children?.map((child) => {
-            return `${child.type === "folder" ? "[D]" : "[C]"} ${child.name}`;
+            return `${child.type === "folder" ? "[D]" : "[F]"} ${child.name}`;
         });
 
         return (
@@ -114,6 +165,23 @@ export class FolderSystem {
         return this.rootFolder;
     }
 
+    public readFileContent(fileName: string): string {
+        const pathParts = fileName.split("/");
+        // Check if root directory should be skipped in path navigation
+        const effectivePath =
+            pathParts[0] === "" ? pathParts.slice(1) : pathParts;
+
+        const file = this.findFolderByPath(
+            effectivePath.slice(0, -1)
+        )?.children?.find(
+            (f) =>
+                f.name === effectivePath[effectivePath.length - 1] &&
+                f.type === "file"
+        );
+
+        return file?.content || "File not found";
+    }
+
     public createCharacter(
         characterName: string,
         scene: Phaser.Scene,
@@ -125,13 +193,12 @@ export class FolderSystem {
         );
 
         const character = charactersFolder?.children?.find(
-            (child) =>
-                child.name === characterName && child.type === "character"
+            (child) => child.name === characterName && child.type === "folder"
         );
 
         if (
             !character ||
-            character.type !== "character" ||
+            character.type !== "folder" ||
             !character.createCharacter
         ) {
             return null;

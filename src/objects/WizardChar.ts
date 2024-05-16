@@ -4,9 +4,8 @@ import { Projectile } from "./Projectile";
 import MainScene from "../scenes/mainScene";
 
 export class Wizard extends GameCharacter {
-    static cost = 70;
     constructor(scene: Phaser.Scene, x: number, y: number) {
-        super(scene, "wizard", 120, x, y, "wizardTexture", 30, 20);
+        super(scene, "wizard", 100, x, y, "wizardTexture", 20, 20);
     }
 
     attack(): void {
