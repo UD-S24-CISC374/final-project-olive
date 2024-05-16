@@ -39,13 +39,13 @@ export default class TutorialScene extends Phaser.Scene {
         posY: 150, // Centered Y position for the board
     };
     private gameOver = false;
-    private gruntAmount = 10;
+    private gruntAmount = 50;
     private currentWave = 0;
     private maxWave = 5;
     private score = 0;
     private scoreText: Phaser.GameObjects.Text;
     public currency: number; // Player currency
-    private health: number; // Health of the base
+    public health: number; // Health of the base
     private healthBar: Phaser.GameObjects.Graphics;
     private end: Phaser.Physics.Arcade.StaticGroup;
     private finish: Phaser.Physics.Arcade.StaticGroup;
@@ -58,14 +58,8 @@ export default class TutorialScene extends Phaser.Scene {
     private readonly prompt: string = "";
     currencyText: Phaser.GameObjects.Text;
     private commandLine?: CommandLine;
-    private tutorialText: Phaser.GameObjects.Text;
-    private curDialogueIdx: number = 0;
-    private dialogueOptions: string[];
-
-    private textTimer: number = 0;
-    private dialogueCharCount: number = 0;
-    private curDialogueText: string = "";
     gameMusic: Phaser.Sound.BaseSound;
+
     constructor() {
         super({ key: "TutorialScene" });
         this.characterManager = new CharacterManager();
@@ -75,15 +69,17 @@ export default class TutorialScene extends Phaser.Scene {
 
     create() {
         //map board
-        this.board_map = new Board(this, this.map_boardConfig);
-        //map image
         this.add.image(400, 350, "map").setScale(1);
-
+        this.board_map = new Board(this, this.map_boardConfig);
+        //background audio
+        this.gameMusic = this.sound.add("backgroundMusic");
+        this.gameMusic.play({ volume: 0.4, loop: true });
+        //Win and Lose images
         //enemy spawn board
         this.spawn_board = new Board(this, this.spawn_boardConfig);
-        //this.baddiesManager = new BaddiesManager(this);
+        this.baddiesManager = new BaddiesManager(this);
 
-        //this.waveManager = new WaveManager(this, this.baddiesManager);
+        this.waveManager = new WaveManager(this, this.baddiesManager);
         //currency
         // Add currency text
         this.currencyText = this.add.text(
@@ -95,13 +91,51 @@ export default class TutorialScene extends Phaser.Scene {
                 color: "white",
             }
         );
+        //help button
+        var graphics = this.add.graphics();
+        // Fill the background with grey color
+        graphics.fillStyle(0x808080, 1); // Grey color
+        graphics.fillRoundedRect(125, 50, 600, 100, 20);
+
+        // Create a Text object for the text
+        var helpText = this.add.text(
+            graphics.x + 20,
+            graphics.y + 20,
+            "cd:Change Directory ; ls:View content of file \n purchase(unit name,xCoord,yCoord): buy units \n remove(unit name,xCoord,yCoord): remove units",
+            {
+                fontFamily: "Arial",
+                fontSize: 24,
+                color: "#ffffff", // White color for text
+            }
+        );
+
+        // Make the text appear above the background
+        helpText.setDepth(1);
+        graphics.setVisible(false);
+        helpText.setVisible(false);
+        let help = this.add.image(800, 100, "questionMark").setInteractive();
+        help.setScale(1 / 2);
+        help.on("pointerover", () => {
+            graphics.setVisible(true);
+            helpText.setVisible(true);
+            console.log("hovered over");
+        });
+        help.on("pointerout", () => {
+            graphics.setVisible(false);
+            helpText.setVisible(false);
+            console.log("not hovered over");
+        });
 
         //health bar stuff
         this.health = 100; // Starting health
         this.healthBar = this.add.graphics();
         this.updateHealthBar();
 
-        //this.commandLine = new CommandLine(this, this.characterManager);
+        this.commandLine = new CommandLine(
+            this,
+            this.characterManager,
+            this.waveManager
+        );
 
         this.time.addEvent({
             delay: 2000, // Attack every 2000 ms (2 seconds)
@@ -120,7 +154,6 @@ export default class TutorialScene extends Phaser.Scene {
             runChildUpdate: true, // Ensures projectile update logic is executed
         });
 
-        //this.edge.create(0, 0, "finishLine");
         this.edge = this.physics.add.staticGroup();
         let platform = this.edge.create(
             270,
@@ -131,6 +164,22 @@ export default class TutorialScene extends Phaser.Scene {
         platform.angle = 90;
         // Manually set the size of the physics body
         platform.body?.setSize(30, 500);
+        platform.setVisible(false);
+
+        this.physics.add.collider(
+            this.baddiesManager.baddies,
+            this.edge,
+            (zombie, platform) => {
+                if (
+                    zombie instanceof Zombie1 &&
+                    platform instanceof Phaser.Physics.Arcade.Sprite
+                ) {
+                    this.handleHitWall(zombie);
+                }
+            },
+            undefined,
+            this
+        );
 
         // Command Line Console
         this.consoleDialogue = this.add.text(100, 160, "", {
@@ -147,12 +196,15 @@ export default class TutorialScene extends Phaser.Scene {
 
         this.score = 0;
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        let scoreText = this.add.text(15, 50, "Score: 0", {
-            fontSize: "20px",
-            color: "black",
-        });
-
-        this.waveManager.startNextWave(); // Start the first wave
+        let scoreText = this.add.text(
+            this.currencyText.x,
+            this.currencyText.y + 50,
+            "Score: 0",
+            {
+                fontSize: "20px",
+                color: "white",
+            }
+        );
 
         this.physics.add.collider(
             this.baddiesManager.baddies,
@@ -163,49 +215,11 @@ export default class TutorialScene extends Phaser.Scene {
                     platform instanceof Phaser.Physics.Arcade.Sprite
                 ) {
                     this.handleHitWall(zombie);
+                    //this.shakeScreen(zombie, platform);
                 }
             },
             undefined,
             this
-        );
-        this.dialogueOptions = [
-            "Welcome General (click on the wizard to advance the text)",
-            "We are in dire need of help \n the zombies are close to invading and we need your help to stop them",
-            "please take accept the position of leader and guide us to victory",
-            "Get accustumed to the book of spells (the command line)",
-            "Within this book you will cast spells to call upon your troops and defend our castle\n try casting (typing) ls to see the content of the book",
-            "Great! Now you're getting the hang of it \n try going into the ... directory using cd followed by ...",
-            "Now look into the contents of this directory",
-            "Thats how you traverse pages (files) of the book",
-            "Now use this knowledge to keep the zombie hordes at bay",
-            "Replacing me will be a reminder incase you forget any of these commands",
-            "Keep in mind that inorder to place a troop you must have right amount of currency to purchase any of them",
-            "Good luck and may your allies strike true!",
-            "Press the arrow whenever you're ready to proceed",
-        ];
-        //background audio
-        this.gameMusic = this.sound.add("backgroundMusic");
-        this.gameMusic.play({ volume: 0.4, loop: true });
-        //NPC button
-        const screenCenterX =
-            this.cameras.main.worldView.x + this.cameras.main.width / 2;
-        const screenCenterY =
-            this.cameras.main.worldView.y + this.cameras.main.height / 2;
-        var rect = new Phaser.GameObjects.Rectangle(
-            this,
-            screenCenterX,
-            screenCenterY,
-            500,
-            500,
-            0x000000,
-            0.5
-        );
-        this.add.existing(rect);
-
-        this.tutorialText = this.add.text(
-            screenCenterX,
-            screenCenterY,
-            this.dialogueOptions[this.curDialogueIdx]
         );
 
         this.physics.add.collider(
@@ -220,13 +234,23 @@ export default class TutorialScene extends Phaser.Scene {
                     // Ensure the collision affects only those zombies within the board
                     if (z instanceof Zombie1 && p instanceof Projectile) {
                         z.takeDamage(p.damage);
+                        this.flashEnemy(z);
                     }
                 }
                 // Destroy the projectile regardless of the zombie's position
                 p.destroy();
             }
         );
+        if (this.gruntAmount === 0) {
+            this.win();
+        }
     }
+    // private shakeScreen(
+    //     zombie: Zombie1,
+    //     platform: Phaser.Physics.Arcade.Sprite
+    // ) {
+    //     this.cameras.main.shake(500, 0.01);
+    // }
 
     private enemyHitWall() {
         console.log("hit wall enemy");
@@ -234,6 +258,8 @@ export default class TutorialScene extends Phaser.Scene {
 
     private handleHitWall(baddy: BaddyCharacter): void {
         // Assume each collision with the platform causes a fixed amount of damage
+        this.health -= baddy.dmg;
+        this.updateHealthBar();
 
         if (this.health <= 50) {
             this.gameMusic.stop();
@@ -244,28 +270,58 @@ export default class TutorialScene extends Phaser.Scene {
         if (this.health <= 0) {
             this.lose();
         }
-        // Assume each collision with the platform causes a fixed amount of damage
-        this.health -= baddy.dmg;
-        this.updateHealthBar();
-
-        if (this.health <= 0) {
-            this.gameOver = true;
-            this.physics.pause();
-            console.log("Game Over");
-        }
         this.baddiesManager.removeCharacter("Zombie1", baddy);
+    }
+    flashEnemy(zombie: Zombie1) {
+        const originalTint = zombie.tint;
+        zombie.setTint(0xff0000);
+        setTimeout(() => {
+            zombie.setTint(originalTint);
+        }, 500);
     }
     private win() {
         this.gameMusic.stop();
         this.gameMusic = this.sound.add("victoryMusic");
         this.gameMusic.play({ volume: 0.4, loop: true });
+        let winImg = this.add.image(400, 400, "youWin");
+        winImg.setScale(0.9);
         this.physics.pause();
+        this.won = true;
+
         console.log("Game Won");
     }
     private lose() {
         this.gameMusic.stop();
         this.gameMusic = this.sound.add("defeatMusic");
         this.gameMusic.play({ volume: 0.4, loop: true });
+        let loseImg = this.add.image(400, 400, "youLose");
+        loseImg.setScale(0.9);
+        // Create the rectangular box
+        const restartButton = this.add.graphics().setInteractive();
+        const buttonWidth = 200;
+        const buttonHeight = 80;
+        const buttonColor = 0xff0000;
+
+        restartButton.fillStyle(buttonColor, 1);
+        restartButton.fillRect(200, 200, buttonWidth, buttonHeight);
+
+        // Add text inside the button
+        const buttonText = this.add.text(
+            200 + buttonWidth / 2,
+            200 + buttonHeight / 2,
+            "Restart",
+            {
+                fontSize: "32px",
+                fontFamily: "Arial",
+                color: "#000000",
+                align: "center",
+            }
+        );
+        buttonText.setOrigin(0.5);
+        restartButton.on("pointerdown", () => {
+            console.log("button pushed");
+            this.scene.restart();
+        });
         this.gameOver = true;
         this.physics.pause();
         console.log("Game Over");
@@ -348,32 +404,7 @@ export default class TutorialScene extends Phaser.Scene {
         this.outputBox?.setText(output);
     }
 
-    update(delta: number) {
-        this.textTimer += delta;
-        if (
-            this.textTimer >= 10 &&
-            this.dialogueCharCount <
-                this.dialogueOptions[this.curDialogueIdx].length
-        ) {
-            var characterArrayText =
-                this.dialogueOptions[this.curDialogueIdx].split("");
-
-            this.curDialogueText += characterArrayText[this.dialogueCharCount];
-
-            this.tutorialText.setText(this.curDialogueText);
-            this.textTimer = 0;
-            this.dialogueCharCount += 1;
-        }
-        let NPC = this.add.image(800, 100, "wizardNPC").setInteractive();
-        NPC.setScale(1 / 2);
-        NPC.on("pointerdown", () => {
-            this.curDialogueIdx++;
-            console.log("clicked");
-        });
-        if (this.curDialogueIdx >= this.dialogueOptions.length) {
-            // Reset dialogue index if it exceeds the length of dialogueOptions array
-            this.curDialogueIdx = 0;
-        }
+    update() {
         this.fpsText.update();
         this.waveManager.update();
 

@@ -2,16 +2,17 @@ import Phaser from "phaser";
 import { BaddiesManager } from "./baddiesManager";
 import { Zombie1 } from "./Zombie1Char";
 import MainScene from "../scenes/mainScene";
+import TutorialScene from "../scenes/tutorialScene";
 
 export class Wave {
     private manager: BaddiesManager;
-    mainScene: MainScene;
+    mainScene: MainScene | TutorialScene;
     private totalEnemies: number;
     private enemiesSpawned: number = 0;
     private spawnInterval: number; // Time between spawns
 
     constructor(
-        scene: MainScene,
+        scene: MainScene | TutorialScene,
         manager: BaddiesManager,
         totalEnemies: number,
         spawnInterval: number
