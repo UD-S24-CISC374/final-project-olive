@@ -7,10 +7,9 @@ export class WaveManager {
     private currentWaveIndex: number = 0;
     mainScene: MainScene;
     baddiesManager: BaddiesManager;
-    isDelayingNextWave: boolean;
+    isWaveActive: boolean = false; // Track if a wave is active
 
     constructor(scene: MainScene, baddiesManager: BaddiesManager) {
-        this.isDelayingNextWave = false; // Add this flag
         this.mainScene = scene;
         this.baddiesManager = baddiesManager;
         this.waves = [
@@ -20,30 +19,27 @@ export class WaveManager {
         ];
     }
 
-    startNextWave() {
-        if (this.currentWaveIndex < this.waves.length) {
+    startNextWave(): string {
+        if (!this.isWaveActive && this.currentWaveIndex < this.waves.length) {
+            this.isWaveActive = true; // Set the wave as active
             this.waves[this.currentWaveIndex++].start();
+            return "Wave started";
+        } else if (this.currentWaveIndex >= this.waves.length) {
+            return "Cannot start next wave, this is the last wave";
         } else {
-            console.log("All waves completed. Maybe loop or end game?");
+            return "A wave is currently active. Wait until it finishes.";
         }
     }
 
     update() {
+        // Here, you might check conditions to set isWaveActive to false when a wave ends
         if (
-            this.currentWaveIndex > 0 &&
-            this.waves[this.currentWaveIndex - 1].isComplete() &&
-            !this.isDelayingNextWave // Check if we are not already delaying
+            this.isWaveActive &&
+            this.baddiesManager.size === 0 &&
+            this.waves[this.currentWaveIndex - 1].isComplete()
         ) {
-            this.isDelayingNextWave = true; // Set the flag to true to prevent re-entry
-            this.mainScene.time.delayedCall(
-                8000,
-                () => {
-                    this.startNextWave();
-                    this.isDelayingNextWave = false; // Reset the flag after delay
-                },
-                [],
-                this
-            );
+            this.isWaveActive = false;
+            console.log("Wave completed. You can now start a new wave.");
         }
     }
 }
