@@ -206,8 +206,6 @@ export default class MainScene extends Phaser.Scene {
         //     }
         // );
 
-        this.waveManager.startNextWave(); // Start the first wave
-
         this.physics.add.collider(
             this.baddiesManager.baddies,
             this.edge,

@@ -2,13 +2,14 @@ import Phaser from "phaser";
 import { BaddyCharacter } from "./baddyCharacter";
 import { Zombie1 } from "./Zombie1Char"; // Assuming Zombie1 is a specific class extending BaddyCharacter
 import MainScene from "../scenes/mainScene";
+import TutorialScene from "../scenes/tutorialScene";
 
 export class BaddiesManager {
     public baddies: Phaser.Physics.Arcade.Group;
-    mainScene: MainScene;
+    mainScene: MainScene | TutorialScene;
     size: number;
 
-    constructor(scene: MainScene) {
+    constructor(scene: MainScene | TutorialScene) {
         this.mainScene = scene;
         this.size = 0;
 

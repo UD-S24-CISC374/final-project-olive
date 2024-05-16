@@ -4,18 +4,19 @@ import { FolderSystem } from "../objects/folderSystem";
 import { CharacterManager } from "../objects/CharacterManager";
 import MainScene from "../scenes/mainScene";
 import { WaveManager } from "./waveManager";
+import TutorialScene from "../scenes/tutorialScene";
 
 export class CommandLine {
     folderSystem: FolderSystem;
     private outputText: Phaser.GameObjects.Text;
     private prompt: string = "$ ";
     characterManager: CharacterManager;
-    mainScene: MainScene;
+    mainScene: MainScene | TutorialScene;
     private inputBox: HTMLInputElement;
     waveManager: WaveManager;
 
     constructor(
-        scene: MainScene,
+        scene: MainScene | TutorialScene,
         characterManager: CharacterManager,
         waveManager: WaveManager
     ) {
