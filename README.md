@@ -18,6 +18,26 @@ In "Terminal Tactics," players face a zombie onslaught using strategic Unix comm
 # Basic Instructions
 
 Type into the command line to find your troops (cd, ls, etc.)
+=======
+TEXT GOES HERE
+
+# Team Color
+
+TEXT GOES HERE
+
+# Developers
+
+* Name (email)
+* Name (email)
+* Name (email)
+
+# Blurb
+
+TEXT GOES HERE
+
+# Basic Instructions
+
+TEXT GOES HERE
 
 # Screenshot
 
@@ -37,3 +57,10 @@ Pixabay: Music
 ChatGPT
 Microsoft Designer AI Image Creator
 
+=======
+
+Link to our [egdd](Educational Game Design Document)
+
+# Credits
+
+TEXT GOES HERE
