@@ -1,15 +1,19 @@
 import MainScene from "../scenes/mainScene";
+import TutorialScene from "../scenes/tutorialScene";
 import { BaddiesManager } from "./baddiesManager";
 import { Wave } from "./wave";
 
 export class WaveManager {
     private waves: Wave[];
     public currentWaveIndex: number = 0;
-    mainScene: MainScene;
+    mainScene: MainScene | TutorialScene;
     baddiesManager: BaddiesManager;
     isWaveActive: boolean = false; // Track if a wave is active
 
-    constructor(scene: MainScene, baddiesManager: BaddiesManager) {
+    constructor(
+        scene: MainScene | TutorialScene,
+        baddiesManager: BaddiesManager
+    ) {
         this.mainScene = scene;
         this.baddiesManager = baddiesManager;
         this.waves = [
