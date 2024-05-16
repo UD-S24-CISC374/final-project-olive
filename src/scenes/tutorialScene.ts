@@ -59,6 +59,13 @@ export default class TutorialScene extends Phaser.Scene {
     currencyText: Phaser.GameObjects.Text;
     private commandLine?: CommandLine;
     gameMusic: Phaser.Sound.BaseSound;
+    private tutorialText: Phaser.GameObjects.Text;
+    private curDialogueIdx: number = 0;
+    private dialogueOptions: string[];
+
+    private textTimer: number = 0;
+    private dialogueCharCount: number = 0;
+    private curDialogueText: string = "";
 
     constructor() {
         super({ key: "TutorialScene" });
@@ -221,6 +228,44 @@ export default class TutorialScene extends Phaser.Scene {
             undefined,
             this
         );
+        this.dialogueOptions = [
+            "Welcome General (click on the wizard to advance the text)",
+            "We are in dire need of help \n the zombies are close to invading and we need your help to stop them",
+            "please take accept the position of leader and guide us to victory",
+            "Get accustumed to the book of spells a.k.a the command line",
+            "Within this book you will cast spells to call upon your troops and \n defend our castle",
+            "try casting ls to see the content of the book",
+            "Great! Now you're getting the hang of it \n try going into the chracters directory using cd followed by chracters",
+            "Now look into the contents of this directory",
+            "Thats how you traverse pages (files) of the book",
+            "here you can type mv followed by \na unit and a x and y coordinate(1-4) to place a unit ",
+            "At any point you can use rm \nfollowed by a unti and its coordinates to remove a unti",
+            "When you go into a units directory \nyou can cast 'cat 'unit name' to view the file \nand learn more about the untis",
+            "Now use this knowledge to keep the zombie hordes at bay",
+            "Replacing me will be a reminder,\nincase you forget any of these commands",
+            "Keep in mind that inorder to place a troop \nyou must have right amount of currency to purchase any of them",
+            "Good luck and may your allies strike true!",
+        ];
+        //background audio
+        this.gameMusic = this.sound.add("backgroundMusic");
+        this.gameMusic.play({ volume: 0.4, loop: true });
+        //NPC button
+        var rect = new Phaser.GameObjects.Rectangle(
+            this,
+            150,
+            50,
+            1000,
+            200,
+            0x000000,
+            0.5
+        );
+        this.add.existing(rect);
+
+        this.tutorialText = this.add.text(
+            10,
+            100,
+            this.dialogueOptions[this.curDialogueIdx]
+        );
 
         this.physics.add.collider(
             this.baddiesManager.baddies,
@@ -345,7 +390,6 @@ export default class TutorialScene extends Phaser.Scene {
     ): HTMLInputElement {
         const input = document.createElement("input");
         input.type = "text";
-        input.style.position = "fixed"; // Change to `fixed` position
         input.style.width = `${width}px`;
         input.style.fontSize = "20px";
         input.style.backgroundColor = "#000";
@@ -354,7 +398,11 @@ export default class TutorialScene extends Phaser.Scene {
         input.style.padding = "5px";
         input.style.outline = "none";
         input.style.zIndex = "1";
-
+        const offsetDown = 50; // Adjust as needed
+        const offsetRight = 50; // Adjust as needed
+        input.style.top = `calc(50% + ${offsetDown}px)`;
+        input.style.left = `calc(50% + ${offsetRight}px)`;
+        input.style.position = "fixed"; // Change to `fixed` position
         document.body.appendChild(input);
 
         const updateInputPosition = () => {
@@ -404,8 +452,43 @@ export default class TutorialScene extends Phaser.Scene {
         this.outputBox?.setText(output);
     }
 
-    update() {
-        this.fpsText.update();
+
+    update(delta: number) {
+        this.textTimer += delta;
+
+        // Check if it's time to update the text and there are characters left in the current dialogue option
+        if (
+            this.textTimer >= 10 &&
+            this.dialogueCharCount <
+                this.dialogueOptions[this.curDialogueIdx].length
+        ) {
+            var characterArrayText =
+                this.dialogueOptions[this.curDialogueIdx].split("");
+
+            // Clear the current text
+            this.curDialogueText = "";
+
+            // Append new characters based on the index
+            for (let i = 0; i <= this.dialogueCharCount; i++) {
+                this.curDialogueText += characterArrayText[i];
+            }
+
+            this.tutorialText.setText(this.curDialogueText);
+            this.textTimer = 0;
+            this.dialogueCharCount += 1;
+        }
+
+        let NPC = this.add.image(800, 100, "wizardNPC").setInteractive();
+        NPC.setScale(1 / 2);
+        NPC.on("pointerdown", () => {
+            this.curDialogueIdx++;
+            console.log("clicked");
+        });
+        if (this.curDialogueIdx >= this.dialogueOptions.length) {
+            // Reset dialogue index if it exceeds the length of dialogueOptions array
+            this.curDialogueIdx = 0;
+        }
+this.fpsText.update();
         this.waveManager.update();
 
         this.projectiles?.children.iterate((child) => {
@@ -415,5 +498,4 @@ export default class TutorialScene extends Phaser.Scene {
         });
         this.characterManager.update();
         this.baddiesManager.update();
-    }
-}
+    

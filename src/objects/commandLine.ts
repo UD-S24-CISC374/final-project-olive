@@ -42,10 +42,10 @@ export class CommandLine {
             case "ls":
                 output = this.folderSystem.listContents();
                 break;
-            case "purchase":
+            case "mv":
                 output = this.purchaseCharacter(arg1, arg2, arg3);
                 break;
-            case "remove":
+            case "rm":
                 output = this.removeCharacter(arg1, arg2, arg3);
                 break;
             case "startwave":
