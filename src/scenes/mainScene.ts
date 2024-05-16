@@ -68,10 +68,10 @@ export default class MainScene extends Phaser.Scene {
     }
 
     create() {
-        //map board
-        this.board_map = new Board(this, this.map_boardConfig);
         //map image
         this.add.image(400, 350, "map").setScale(1);
+        //map board
+        this.board_map = new Board(this, this.map_boardConfig);
         //background audio
         this.gameMusic = this.sound.add("backgroundMusic");
         this.gameMusic.play({ volume: 0.4, loop: true });
