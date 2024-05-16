@@ -5,7 +5,7 @@ import MainScene from "../scenes/mainScene";
 
 export class Ranger extends GameCharacter {
     constructor(scene: Phaser.Scene, x: number, y: number) {
-        super(scene, "ranger", 120, x, y, "rangerTexture", 20, 50);
+        super(scene, "ranger", 100, x, y, "rangerTexture", 30, 50);
     }
 
     attack(): void {

@@ -15,7 +15,7 @@ interface Cell {
     row: number;
     x: number;
     y: number;
-    rectangle: Phaser.GameObjects.Rectangle;
+    text: Phaser.GameObjects.Text; // Add this line
 }
 
 export class Board {
@@ -44,21 +44,24 @@ export class Board {
             let rowCells: Cell[] = [];
 
             for (let col = 0; col < this.config.cols; col++) {
-                const { cellWidth, cellHeight } = this.config;
-                const x = this.config.posX + col * cellWidth + cellWidth / 2;
-                const y = this.config.posY + row * cellHeight + cellHeight / 2;
-                const rect = this.scene.add
-                    .rectangle(x, y, cellWidth, cellHeight, 0xffffff, 0.2)
-                    .setStrokeStyle(2, 0x000000); // Black border for clarity
+                const { cellWidth, cellHeight, posX, posY } = this.config;
+                const x = posX + col * cellWidth + cellWidth / 2;
+                const y = posY + row * cellHeight + cellHeight / 2;
 
-                this.scene.add.existing(rect);
+                const text = this.scene.add
+                    .text(x, y, `(${col}, ${row})`, {
+                        color: "#000000",
+                        fontSize: "16px",
+                        align: "center",
+                    })
+                    .setOrigin(0.5); // Center text in the cell
 
                 const cell: Cell = {
                     col,
                     row,
                     x,
                     y,
-                    rectangle: rect,
+                    text: text, // Store the text object in the cell
                 };
 
                 rowCells.push(cell);

@@ -51,6 +51,18 @@ export class CommandLine {
                 // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
                 output = this.waveManager.startNextWave();
                 break;
+            case "cat":
+                output = this.folderSystem.readFileContent(arg1);
+                break;
+            case "display-health":
+                output = `Current health: ${this.mainScene.health}`;
+                break;
+            case "display-currency":
+                output = `Current amount of currency: ${this.mainScene.currency}`;
+                break;
+            case "display-wave":
+                output = `Current wave: ${this.waveManager.currentWaveIndex}`;
+                break;
             default:
                 output = `Invalid command: ${command}`;
                 break;
