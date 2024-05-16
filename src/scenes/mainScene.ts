@@ -196,6 +196,7 @@ export default class MainScene extends Phaser.Scene {
 
         //this.score = 0;
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
         // let scoreText = this.add.text(
         //     this.currencyText.x,
         //     this.currencyText.y + 50,
@@ -205,6 +206,7 @@ export default class MainScene extends Phaser.Scene {
         //         color: "white",
         //     }
         // );
+
 
         this.physics.add.collider(
             this.baddiesManager.baddies,

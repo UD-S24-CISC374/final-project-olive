@@ -98,6 +98,40 @@ export default class TutorialScene extends Phaser.Scene {
                 color: "white",
             }
         );
+        //help button
+        var graphics = this.add.graphics();
+        // Fill the background with grey color
+        graphics.fillStyle(0x808080, 1); // Grey color
+        graphics.fillRoundedRect(125, 50, 600, 100, 20);
+
+        // Create a Text object for the text
+        var helpText = this.add.text(
+            graphics.x + 20,
+            graphics.y + 20,
+            "cd:Change Directory ; ls:View content of file \n purchase(unit name,xCoord,yCoord): buy units \n remove(unit name,xCoord,yCoord): remove units",
+            {
+                fontFamily: "Arial",
+                fontSize: 24,
+                color: "#ffffff", // White color for text
+            }
+        );
+
+        // Make the text appear above the background
+        helpText.setDepth(1);
+        graphics.setVisible(false);
+        helpText.setVisible(false);
+        let help = this.add.image(800, 100, "questionMark").setInteractive();
+        help.setScale(1 / 2);
+        help.on("pointerover", () => {
+            graphics.setVisible(true);
+            helpText.setVisible(true);
+            console.log("hovered over");
+        });
+        help.on("pointerout", () => {
+            graphics.setVisible(false);
+            helpText.setVisible(false);
+            console.log("not hovered over");
+        });
 
         //health bar stuff
         this.health = 100; // Starting health
@@ -418,6 +452,7 @@ export default class TutorialScene extends Phaser.Scene {
         this.outputBox?.setText(output);
     }
 
+
     update(delta: number) {
         this.textTimer += delta;
 
@@ -453,7 +488,7 @@ export default class TutorialScene extends Phaser.Scene {
             // Reset dialogue index if it exceeds the length of dialogueOptions array
             this.curDialogueIdx = 0;
         }
-        this.fpsText.update();
+this.fpsText.update();
         this.waveManager.update();
 
         this.projectiles?.children.iterate((child) => {
@@ -463,5 +498,4 @@ export default class TutorialScene extends Phaser.Scene {
         });
         this.characterManager.update();
         this.baddiesManager.update();
-    }
-}
+    
