@@ -452,7 +452,6 @@ export default class TutorialScene extends Phaser.Scene {
         this.outputBox?.setText(output);
     }
 
-
     update(delta: number) {
         this.textTimer += delta;
 
@@ -488,7 +487,7 @@ export default class TutorialScene extends Phaser.Scene {
             // Reset dialogue index if it exceeds the length of dialogueOptions array
             this.curDialogueIdx = 0;
         }
-this.fpsText.update();
+        this.fpsText.update();
         this.waveManager.update();
 
         this.projectiles?.children.iterate((child) => {
@@ -498,4 +497,5 @@ this.fpsText.update();
         });
         this.characterManager.update();
         this.baddiesManager.update();
-    
+    }
+}
