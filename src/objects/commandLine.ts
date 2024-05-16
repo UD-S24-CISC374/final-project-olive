@@ -3,6 +3,7 @@ import Phaser from "phaser";
 import { FolderSystem } from "../objects/folderSystem";
 import { CharacterManager } from "../objects/CharacterManager";
 import MainScene from "../scenes/mainScene";
+import { WaveManager } from "./waveManager";
 
 export class CommandLine {
     folderSystem: FolderSystem;
@@ -11,11 +12,17 @@ export class CommandLine {
     characterManager: CharacterManager;
     mainScene: MainScene;
     private inputBox: HTMLInputElement;
+    waveManager: WaveManager;
 
-    constructor(scene: MainScene, characterManager: CharacterManager) {
+    constructor(
+        scene: MainScene,
+        characterManager: CharacterManager,
+        waveManager: WaveManager
+    ) {
         this.folderSystem = new FolderSystem();
         this.characterManager = characterManager;
         this.mainScene = scene;
+        this.waveManager = waveManager;
     }
 
     public processCommand(command: string) {
@@ -39,6 +46,10 @@ export class CommandLine {
                 break;
             case "remove":
                 output = this.removeCharacter(arg1, arg2, arg3);
+                break;
+            case "startwave":
+                // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+                output = this.waveManager.startNextWave();
                 break;
             default:
                 output = `Invalid command: ${command}`;

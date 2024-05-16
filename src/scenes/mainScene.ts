@@ -109,7 +109,11 @@ export default class MainScene extends Phaser.Scene {
         this.healthBar = this.add.graphics();
         this.updateHealthBar();
 
-        this.commandLine = new CommandLine(this, this.characterManager);
+        this.commandLine = new CommandLine(
+            this,
+            this.characterManager,
+            this.waveManager
+        );
 
         this.time.addEvent({
             delay: 2000, // Attack every 2000 ms (2 seconds)
@@ -174,8 +178,6 @@ export default class MainScene extends Phaser.Scene {
             fontSize: "20px",
             color: "black",
         });
-
-        this.waveManager.startNextWave(); // Start the first wave
 
         this.physics.add.collider(
             this.baddiesManager.baddies,
