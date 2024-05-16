@@ -95,13 +95,13 @@ export default class MainScene extends Phaser.Scene {
         var graphics = this.add.graphics();
         // Fill the background with grey color
         graphics.fillStyle(0x808080, 1); // Grey color
-        graphics.fillRoundedRect(125, 50, 600, 100, 20);
+        graphics.fillRoundedRect(125, 50, 600, 115, 20);
 
         // Create a Text object for the text
         var helpText = this.add.text(
             150,
             50,
-            "cd:Change Directory ; ls:View content of file \n purchase(unit name,xCoord,yCoord): buy units \n remove(unit name,xCoord,yCoord): remove units",
+            "cd:Change Directory ; ls:View content of file \n purchase(unit name,xCoord,yCoord): buy units \n remove(unit name,xCoord,yCoord): remove units \nstartwave:Starts the wave;cat(unit):view info about unit",
             {
                 fontFamily: "Arial",
                 fontSize: 24,
