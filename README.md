@@ -34,4 +34,6 @@ TEXT GOES HERE
 GitHub: Ideas and some code
 Phaser Forums: Ideas and some code
 Pixabay: Music
+ChatGPT
+Microsoft Designer AI Image Creator
 
