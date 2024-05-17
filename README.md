@@ -56,11 +56,3 @@ Phaser Forums: Ideas and some code
 Pixabay: Music
 ChatGPT
 Microsoft Designer AI Image Creator
-
-=======
-
-Link to our [egdd](Educational Game Design Document)
-
-# Credits
-
-TEXT GOES HERE
