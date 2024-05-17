@@ -8,7 +8,6 @@ import { Board } from "../objects/board";
 import { CommandLine } from "../objects/commandLine";
 import { WaveManager } from "../objects/waveManager";
 import { BaddiesManager } from "../objects/baddiesManager";
-import { Zombie1 } from "../objects/Zombie1Char";
 import { BaddyCharacter } from "../objects/baddyCharacter";
 
 export default class MainScene extends Phaser.Scene {
@@ -171,7 +170,7 @@ export default class MainScene extends Phaser.Scene {
             this.edge,
             (zombie, platform) => {
                 if (
-                    zombie instanceof Zombie1 &&
+                    zombie instanceof BaddyCharacter &&
                     platform instanceof Phaser.Physics.Arcade.Sprite
                 ) {
                     this.handleHitWall(zombie);
@@ -211,7 +210,7 @@ export default class MainScene extends Phaser.Scene {
             this.edge,
             (zombie, platform) => {
                 if (
-                    zombie instanceof Zombie1 &&
+                    zombie instanceof BaddyCharacter &&
                     platform instanceof Phaser.Physics.Arcade.Sprite
                 ) {
                     this.handleHitWall(zombie);
@@ -232,7 +231,10 @@ export default class MainScene extends Phaser.Scene {
 
                 if (this.board_map.isWithinBounds(z.x, z.y)) {
                     // Ensure the collision affects only those zombies within the board
-                    if (z instanceof Zombie1 && p instanceof Projectile) {
+                    if (
+                        z instanceof BaddyCharacter &&
+                        p instanceof Projectile
+                    ) {
                         z.takeDamage(p.damage);
                         this.flashEnemy(z);
                     }
@@ -270,9 +272,9 @@ export default class MainScene extends Phaser.Scene {
         if (this.health <= 0) {
             this.lose();
         }
-        this.baddiesManager.removeCharacter("Zombie1", baddy);
+        this.baddiesManager.removeCharacter(baddy.name.toLowerCase(), baddy);
     }
-    flashEnemy(zombie: Zombie1) {
+    flashEnemy(zombie: BaddyCharacter) {
         const originalTint = zombie.tint;
         zombie.setTint(0xff0000);
         setTimeout(() => {

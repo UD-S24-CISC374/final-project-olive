@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { BaddyCharacter } from "./baddyCharacter";
-import { Zombie1 } from "./Zombie1Char"; // Assuming Zombie1 is a specific class extending BaddyCharacter
+import { Zombie1 } from "./Zombie1Char";
+import { Zombie2 } from "./Zombie2Char";
 import MainScene from "../scenes/mainScene";
 import TutorialScene from "../scenes/tutorialScene";
 
@@ -15,7 +16,11 @@ export class BaddiesManager {
 
         this.baddies = this.mainScene.physics.add.group({
             classType: Zombie1,
-            key: "Zombie1",
+            key: "zombie1",
+        });
+        this.baddies = this.mainScene.physics.add.group({
+            classType: Zombie2,
+            key: "zombie2",
         });
     }
 
@@ -25,21 +30,16 @@ export class BaddiesManager {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (this.baddies) {
             //a bunch of if statements to handle configs for each bad guy
-            if (type === "Zombie1") {
-                baddy.setY(
-                    this.mainScene.board_map.getRandomCellPosition().y + 60
-                );
-                baddy.setVelocityX(Phaser.Math.FloatBetween(-50, -10));
-                baddy.setPushable(false);
-                baddy.setScale(1.1); // Now you can safely apply setScale
-                baddy.setOrigin(0.5, 0.95); // Adjusting origin for better alignment
-                baddy.body?.setSize(20, 55); //set hitbox size
 
-                this.baddies.add(baddy);
-                this.size++;
-            }
-        } else {
-            console.warn(`No group found for type ${type}`);
+            baddy.setY(this.mainScene.board_map.getRandomCellPosition().y + 60);
+            baddy.setVelocityX(Phaser.Math.FloatBetween(-50, -10));
+            baddy.setPushable(false);
+            baddy.setScale(1.1); // Now you can safely apply setScale
+            baddy.setOrigin(0.5, 0.95); // Adjusting origin for better alignment
+            baddy.body?.setSize(20, 55); //set hitbox size
+
+            this.baddies.add(baddy);
+            this.size++;
         }
     }
 
