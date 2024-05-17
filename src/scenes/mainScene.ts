@@ -41,7 +41,7 @@ export default class MainScene extends Phaser.Scene {
     private gruntAmount = 50;
     private currentWave = 0;
     private maxWave = 5;
-    private score = 0;
+    //private score = 0;
     private scoreText: Phaser.GameObjects.Text;
     public currency: number; // Player currency
     public health: number; // Health of the base
@@ -94,13 +94,13 @@ export default class MainScene extends Phaser.Scene {
         var graphics = this.add.graphics();
         // Fill the background with grey color
         graphics.fillStyle(0x808080, 1); // Grey color
-        graphics.fillRoundedRect(125, 50, 600, 100, 20);
+        graphics.fillRoundedRect(125, 50, 600, 115, 20);
 
         // Create a Text object for the text
         var helpText = this.add.text(
-            graphics.x + 20,
-            graphics.y + 20,
-            "cd:Change Directory ; ls:View content of file \n purchase(unit name,xCoord,yCoord): buy units \n remove(unit name,xCoord,yCoord): remove units",
+            150,
+            50,
+            "cd:Change Directory ; ls:View content of file \n purchase(unit name,xCoord,yCoord): buy units \n remove(unit name,xCoord,yCoord): remove units \nstartwave:Starts the wave;cat(unit):view info about unit",
             {
                 fontFamily: "Arial",
                 fontSize: 24,
@@ -193,17 +193,19 @@ export default class MainScene extends Phaser.Scene {
 
         this.inputBox = this.createInputBox(670, 575, 310);
 
-        this.score = 0;
+        //this.score = 0;
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        let scoreText = this.add.text(
-            this.currencyText.x,
-            this.currencyText.y + 50,
-            "Score: 0",
-            {
-                fontSize: "20px",
-                color: "white",
-            }
-        );
+
+        // let scoreText = this.add.text(
+        //     this.currencyText.x,
+        //     this.currencyText.y + 50,
+        //     "Score: 0",
+        //     {
+        //         fontSize: "20px",
+        //         color: "white",
+        //     }
+        // );
+
 
         this.physics.add.collider(
             this.baddiesManager.baddies,
@@ -285,8 +287,12 @@ export default class MainScene extends Phaser.Scene {
         this.gameMusic.stop();
         this.gameMusic = this.sound.add("victoryMusic");
         this.gameMusic.play({ volume: 0.4, loop: true });
-        let winImg = this.add.image(400, 400, "youWin");
+        let winImg = this.add.image(400, 400, "youWin").setInteractive();
         winImg.setScale(0.9);
+        winImg.on("pointerup", () => {
+            console.log("button pushed");
+            this.scene.restart();
+        });
         this.physics.pause();
         this.won = true;
 
@@ -296,31 +302,9 @@ export default class MainScene extends Phaser.Scene {
         this.gameMusic.stop();
         this.gameMusic = this.sound.add("defeatMusic");
         this.gameMusic.play({ volume: 0.4, loop: true });
-        let loseImg = this.add.image(400, 400, "youLose");
+        let loseImg = this.add.image(400, 400, "youLose").setInteractive();
         loseImg.setScale(0.9);
-        // Create the rectangular box
-        const restartButton = this.add.graphics().setInteractive();
-        const buttonWidth = 200;
-        const buttonHeight = 80;
-        const buttonColor = 0xff0000;
-
-        restartButton.fillStyle(buttonColor, 1);
-        restartButton.fillRect(200, 200, buttonWidth, buttonHeight);
-
-        // Add text inside the button
-        const buttonText = this.add.text(
-            200 + buttonWidth / 2,
-            200 + buttonHeight / 2,
-            "Restart",
-            {
-                fontSize: "32px",
-                fontFamily: "Arial",
-                color: "#000000",
-                align: "center",
-            }
-        );
-        buttonText.setOrigin(0.5);
-        restartButton.on("pointerdown", () => {
+        loseImg.on("pointerup", () => {
             console.log("button pushed");
             this.scene.restart();
         });

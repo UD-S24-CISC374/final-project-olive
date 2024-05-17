@@ -31,6 +31,7 @@ export default class PreloadScene extends Phaser.Scene {
         this.load.image("questionMark", "assets/img/questionMark.png");
         this.load.image("wizardNPC", "assets/img/wizardNPC.jpg");
         this.load.image("zombie2Texture", "assets/img/zombie2-sm.png");
+        this.load.image("titlePage", "assets/img/titlePage.jpeg");
 
         //audio
         this.load.audio("backgroundMusic", "assets/audio/backgroundMusic.mp3");
