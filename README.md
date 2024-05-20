@@ -20,7 +20,7 @@ Type into the command line to find your troops (cd, ls, etc.)
 
 # Screenshot
 
-TEXT GOES HERE
+![Image of Game](https://github.com/UD-S24-CISC374/final-project-olive/blob/main/docs/large.png) 
 
 # Gameplay Video
 
