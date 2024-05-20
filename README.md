@@ -24,7 +24,7 @@ Type into the command line to find your troops (cd, ls, etc.)
 
 # Gameplay Video
 
-TEXT GOES HERE
+[Contribution guidelines for this project](https://drive.google.com/file/d/1QHB6lQAXLtQ4d0mZjumThYzl8BL3le41/view?usp=sharing)
 
 # Educational Game Design Document
 (https://github.com/UD-S24-CISC374/final-project-olive/blob/main/docs/egdd.md)
