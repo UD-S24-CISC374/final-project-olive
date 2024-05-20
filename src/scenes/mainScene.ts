@@ -100,7 +100,7 @@ export default class MainScene extends Phaser.Scene {
         var helpText = this.add.text(
             150,
             50,
-            "cd:Change Directory ; ls:View content of file \n purchase(unit name,xCoord,yCoord): buy units \n remove(unit name,xCoord,yCoord): remove units \nstartwave:Starts the wave;cat(unit):view info about unit",
+            "cd:Change Directory ; ls:View content of file \n mv(unit name,xCoord,yCoord): buy units \n rm(unit name,xCoord,yCoord): remove units \nstartwave:Starts the wave;cat(unit):view info about unit",
             {
                 fontFamily: "Arial",
                 fontSize: 24,
